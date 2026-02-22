@@ -10,7 +10,7 @@ class DeleteAlarmUseCase @Inject constructor(
     private val scheduler: AlarmScheduler,
 ) {
     suspend operator fun invoke(alarm: Alarm) {
-        scheduler.cancel(alarm)
         repository.deleteAlarm(alarm)
+        scheduler.cancel(alarm)
     }
 }
