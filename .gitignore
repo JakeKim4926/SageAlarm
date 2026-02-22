@@ -1,0 +1,32 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IntelliJ / Android Studio
+*.iml
+.idea/
+# (협업 시 일부 .idea 설정만 추적하고 싶으면 별도 whitelist 전략 사용)
+
+# Gradle
+.gradle/
+**/build/
+
+# Local config (SDK path, local machine settings)
+local.properties
+
+# Android build outputs / captures
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Kotlin / IntelliJ caches (optional but recommended)
+.kotlin/
+
+# Logs
+*.log
+
+# Signing / secrets (강력 추천)
+*.jks
+*.keystore
+keystore.properties
+signing.properties

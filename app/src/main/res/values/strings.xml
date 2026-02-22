@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SageAlarm</string>
+    <string name="alarm_channel_name">알람</string>
+    <string name="alarm_channel_description">알람 재생 알림</string>
+    <string name="notification_title">알람</string>
+    <string name="notification_dismiss">해제</string>
+    <string name="add_alarm">알람 추가</string>
+    <string name="edit_alarm">알람 편집</string>
+    <string name="label_hint">레이블 (선택)</string>
+    <string name="tts_message_hint">TTS 메시지 (최대 100자)</string>
+    <string name="select_music">음악 선택</string>
+    <string name="no_music_selected">기본 알람음</string>
+    <string name="save">저장</string>
+    <string name="delete">삭제</string>
+    <string name="settings">설정</string>
+    <string name="dismiss_instruction">숫자를 순서대로 눌러 알람을 해제하세요</string>
+    <string name="version">버전</string>
+</resources>

@@ -1,0 +1,27 @@
+package com.sagealarm.presentation.settings
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.sagealarm.domain.model.AppSettings
+import com.sagealarm.domain.repository.AppSettingsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val repository: AppSettingsRepository,
+) : ViewModel() {
+
+    val settings: StateFlow<AppSettings> = repository.getSettings()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings())
+
+    fun toggleDismissPuzzle(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.updateDismissPuzzleEnabled(enabled)
+        }
+    }
+}
