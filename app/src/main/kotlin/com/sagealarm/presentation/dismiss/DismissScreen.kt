@@ -1,7 +1,9 @@
 package com.sagealarm.presentation.dismiss
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -42,34 +44,46 @@ fun DismissScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.dismiss_instruction),
+    if (uiState.isPuzzleEnabled) {
+        Box(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 48.dp),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-        )
+                .fillMaxSize()
+                .padding(16.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.dismiss_instruction),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 48.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            )
 
-        NumberPuzzle(
-            numberItems = uiState.numberItems,
-            sortedTarget = uiState.sortedTarget,
-            nextIndex = uiState.nextIndex,
-            onNumberClicked = viewModel::onNumberClicked,
-        )
+            NumberPuzzle(
+                numberItems = uiState.numberItems,
+                sortedTarget = uiState.sortedTarget,
+                nextIndex = uiState.nextIndex,
+                onNumberClicked = viewModel::onNumberClicked,
+            )
 
-        ProgressIndicator(
-            current = uiState.nextIndex,
-            total = uiState.sortedTarget.size,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp),
-        )
+            ProgressIndicator(
+                current = uiState.nextIndex,
+                total = uiState.sortedTarget.size,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 48.dp),
+            )
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Button(onClick = viewModel::dismiss) {
+                Text(text = stringResource(R.string.notification_dismiss))
+            }
+        }
     }
 }
 

@@ -1,11 +1,14 @@
 package com.sagealarm.presentation.dismiss
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.sagealarm.domain.repository.AppSettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val PUZZLE_COUNT = 5
@@ -19,6 +22,7 @@ data class NumberItem(
 )
 
 data class DismissUiState(
+    val isPuzzleEnabled: Boolean = true,
     val numberItems: List<NumberItem> = emptyList(),
     val sortedTarget: List<Int> = emptyList(),
     val nextIndex: Int = 0,
@@ -26,13 +30,24 @@ data class DismissUiState(
 )
 
 @HiltViewModel
-class DismissViewModel @Inject constructor() : ViewModel() {
+class DismissViewModel @Inject constructor(
+    private val settingsRepository: AppSettingsRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DismissUiState())
     val uiState: StateFlow<DismissUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            settingsRepository.getSettings().collect { settings ->
+                _uiState.update { it.copy(isPuzzleEnabled = settings.isDismissPuzzleEnabled) }
+            }
+        }
         generatePuzzle()
+    }
+
+    fun dismiss() {
+        _uiState.update { it.copy(isDismissed = true) }
     }
 
     fun onNumberClicked(value: Int) {
@@ -63,12 +78,14 @@ class DismissViewModel @Inject constructor() : ViewModel() {
                 yFraction = (0.05f..0.75f).random(),
             )
         }
-        _uiState.value = DismissUiState(
-            numberItems = items,
-            sortedTarget = sorted,
-            nextIndex = 0,
-            isDismissed = false,
-        )
+        _uiState.update {
+            it.copy(
+                numberItems = items,
+                sortedTarget = sorted,
+                nextIndex = 0,
+                isDismissed = false,
+            )
+        }
     }
 
     private fun ClosedFloatingPointRange<Float>.random(): Float =
