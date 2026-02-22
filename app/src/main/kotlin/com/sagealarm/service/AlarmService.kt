@@ -107,7 +107,7 @@ class AlarmService : Service() {
             putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
         }
         val pendingIntent = PendingIntent.getActivity(
-            this, alarmId.toInt(), dismissIntent,
+            this, (alarmId and 0x7FFF_FFFFL).toInt(), dismissIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
