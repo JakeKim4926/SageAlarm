@@ -60,7 +60,7 @@ fun AlarmEditScreen(
     ) { uri: Uri? -> viewModel.updateMusicUri(uri?.toString()) }
 
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
-    LaunchedEffect(uiState.isSaved) { if (uiState.isSaved) onBack() }
+    LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
         viewModel.updateHour(timePickerState.hour)
         viewModel.updateMinute(timePickerState.minute)

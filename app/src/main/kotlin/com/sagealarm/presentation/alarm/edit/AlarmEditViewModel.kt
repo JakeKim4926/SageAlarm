@@ -23,7 +23,7 @@ data class AlarmEditUiState(
     val repeatDays: Set<Int> = emptySet(),
     val musicUri: String? = null,
     val isLoading: Boolean = false,
-    val isSaved: Boolean = false,
+    val isNavigateBack: Boolean = false,
 )
 
 @HiltViewModel
@@ -96,7 +96,7 @@ class AlarmEditViewModel @Inject constructor(
                 isEnabled = true,
             )
             saveAlarmUseCase(alarm)
-            _uiState.update { it.copy(isSaved = true) }
+            _uiState.update { it.copy(isNavigateBack = true) }
         }
     }
 
@@ -104,7 +104,7 @@ class AlarmEditViewModel @Inject constructor(
         val alarm = editingAlarm ?: return
         viewModelScope.launch {
             deleteAlarmUseCase(alarm)
-            _uiState.update { it.copy(isSaved = true) }
+            _uiState.update { it.copy(isNavigateBack = true) }
         }
     }
 
