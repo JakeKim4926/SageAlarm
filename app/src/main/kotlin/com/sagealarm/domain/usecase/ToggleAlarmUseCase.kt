@@ -9,8 +9,7 @@ class ToggleAlarmUseCase @Inject constructor(
     private val scheduler: AlarmScheduler,
 ) {
     suspend operator fun invoke(id: Long, isEnabled: Boolean) {
-        repository.setAlarmEnabled(id, isEnabled)
-        val alarm = repository.getAlarmById(id) ?: return
+        val alarm = repository.setAlarmEnabled(id, isEnabled) ?: return
         if (isEnabled) {
             scheduler.schedule(alarm)
         } else {

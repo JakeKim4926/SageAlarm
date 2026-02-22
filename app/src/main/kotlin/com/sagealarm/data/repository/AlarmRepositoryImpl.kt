@@ -25,8 +25,10 @@ class AlarmRepositoryImpl @Inject constructor(
     override suspend fun deleteAlarm(alarm: Alarm) =
         dao.deleteAlarm(alarm.toEntity())
 
-    override suspend fun setAlarmEnabled(id: Long, isEnabled: Boolean) =
+    override suspend fun setAlarmEnabled(id: Long, isEnabled: Boolean): Alarm? {
         dao.setAlarmEnabled(id, isEnabled)
+        return dao.getAlarmById(id)?.toDomain()
+    }
 
     override suspend fun getEnabledAlarms(): List<Alarm> =
         dao.getEnabledAlarms().map { it.toDomain() }

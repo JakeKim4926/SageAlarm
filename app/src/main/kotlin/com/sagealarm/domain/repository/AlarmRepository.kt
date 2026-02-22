@@ -8,6 +8,6 @@ interface AlarmRepository {
     suspend fun getAlarmById(id: Long): Alarm?
     suspend fun saveAlarm(alarm: Alarm): Long
     suspend fun deleteAlarm(alarm: Alarm)
-    suspend fun setAlarmEnabled(id: Long, isEnabled: Boolean)
+    suspend fun setAlarmEnabled(id: Long, isEnabled: Boolean): Alarm?
     suspend fun getEnabledAlarms(): List<Alarm>
 }
