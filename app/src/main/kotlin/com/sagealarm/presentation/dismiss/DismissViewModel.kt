@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -89,5 +90,5 @@ class DismissViewModel @Inject constructor(
     }
 
     private fun ClosedFloatingPointRange<Float>.random(): Float =
-        start + (endInclusive - start) * Math.random().toFloat()
+        start + (endInclusive - start) * Random.nextFloat()
 }
