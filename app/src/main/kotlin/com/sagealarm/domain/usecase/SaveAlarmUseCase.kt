@@ -2,7 +2,7 @@ package com.sagealarm.domain.usecase
 
 import com.sagealarm.domain.model.Alarm
 import com.sagealarm.domain.repository.AlarmRepository
-import com.sagealarm.service.AlarmScheduler
+import com.sagealarm.domain.scheduler.AlarmScheduler
 import javax.inject.Inject
 
 class SaveAlarmUseCase @Inject constructor(

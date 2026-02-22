@@ -1,4 +1,4 @@
-package com.sagealarm.service
+package com.sagealarm.domain.scheduler
 
 import com.sagealarm.domain.model.Alarm
 

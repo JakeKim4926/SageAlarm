@@ -1,7 +1,7 @@
 package com.sagealarm.di
 
+import com.sagealarm.domain.scheduler.AlarmScheduler
 import com.sagealarm.service.AlarmManagerScheduler
-import com.sagealarm.service.AlarmScheduler
 import com.sagealarm.service.AndroidTtsPlayer
 import com.sagealarm.service.TtsPlayer
 import dagger.Binds
