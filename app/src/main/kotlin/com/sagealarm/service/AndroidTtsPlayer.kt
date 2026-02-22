@@ -13,7 +13,8 @@ class AndroidTtsPlayer @Inject constructor(
     private var tts: TextToSpeech? = null
     private var isReady = false
 
-    init {
+    override fun initialize() {
+        if (tts != null) return
         tts = TextToSpeech(context) { status ->
             isReady = (status == TextToSpeech.SUCCESS)
         }

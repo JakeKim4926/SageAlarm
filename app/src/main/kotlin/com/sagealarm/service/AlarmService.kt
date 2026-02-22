@@ -52,6 +52,7 @@ class AlarmService : Service() {
             return START_NOT_STICKY
         }
 
+        ttsPlayer.initialize()
         startForeground(NOTIFICATION_ID, buildNotification(alarmId))
         launchDismissScreen(alarmId)
 
@@ -96,7 +97,6 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         ttsPlayer.stop()
-        ttsPlayer.release()
         player?.stop()
         player?.release()
         player = null
