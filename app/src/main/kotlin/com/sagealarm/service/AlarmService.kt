@@ -67,6 +67,10 @@ class AlarmService : Service() {
     }
 
     private fun playAlarmSound(musicUri: String?) {
+        player?.stop()
+        player?.release()
+        player = null
+
         val uri: Uri = if (!musicUri.isNullOrBlank()) {
             Uri.parse(musicUri)
         } else {
