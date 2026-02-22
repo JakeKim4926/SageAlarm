@@ -24,40 +24,43 @@ class AlarmReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            ACTION_ALARM_TRIGGER -> handleAlarmTrigger(context, intent)
-            Intent.ACTION_BOOT_COMPLETED -> rescheduleAllAlarms()
+        val pendingResult = goAsync()
+        scope.launch {
+            try {
+                when (intent.action) {
+                    ACTION_ALARM_TRIGGER -> handleAlarmTrigger(context, intent)
+                    Intent.ACTION_BOOT_COMPLETED -> rescheduleAllAlarms()
+                }
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 
-    private fun handleAlarmTrigger(context: Context, intent: Intent) {
+    private suspend fun handleAlarmTrigger(context: Context, intent: Intent) {
         val alarmId = intent.getLongExtra(EXTRA_ALARM_ID, -1L)
         if (alarmId == -1L) return
 
-        scope.launch {
-            val alarm = alarmRepository.getAlarmById(alarmId) ?: return@launch
+        val alarm = alarmRepository.getAlarmById(alarmId) ?: return
 
-            // Reschedule for next occurrence if repeating
-            if (alarm.repeatDays.isNotEmpty()) {
-                alarmScheduler.schedule(alarm)
-            }
+        // Reschedule for next occurrence if repeating
+        if (alarm.repeatDays.isNotEmpty()) {
+            alarmScheduler.schedule(alarm)
+        }
 
-            val serviceIntent = Intent(context, AlarmService::class.java).apply {
-                putExtra(EXTRA_ALARM_ID, alarmId)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
+        val serviceIntent = Intent(context, AlarmService::class.java).apply {
+            putExtra(EXTRA_ALARM_ID, alarmId)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
         }
     }
 
-    private fun rescheduleAllAlarms() {
-        scope.launch {
-            alarmRepository.getEnabledAlarms().forEach { alarm ->
-                alarmScheduler.schedule(alarm)
-            }
+    private suspend fun rescheduleAllAlarms() {
+        alarmRepository.getEnabledAlarms().forEach { alarm ->
+            alarmScheduler.schedule(alarm)
         }
     }
 
