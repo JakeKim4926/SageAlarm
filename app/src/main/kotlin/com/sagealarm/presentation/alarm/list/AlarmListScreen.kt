@@ -169,21 +169,23 @@ private fun AlarmItem(
     }
 }
 
+private val DAY_NAMES = mapOf(
+    Calendar.MONDAY to "월",
+    Calendar.TUESDAY to "화",
+    Calendar.WEDNESDAY to "수",
+    Calendar.THURSDAY to "목",
+    Calendar.FRIDAY to "금",
+    Calendar.SATURDAY to "토",
+    Calendar.SUNDAY to "일",
+)
+
+private val DAY_ORDER = listOf(
+    Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+    Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY,
+)
+
 private fun formatTime(hour: Int, minute: Int): String =
     "%02d:%02d".format(hour, minute)
 
-private fun formatRepeatDays(days: Set<Int>): String {
-    val dayNames = mapOf(
-        Calendar.MONDAY to "월",
-        Calendar.TUESDAY to "화",
-        Calendar.WEDNESDAY to "수",
-        Calendar.THURSDAY to "목",
-        Calendar.FRIDAY to "금",
-        Calendar.SATURDAY to "토",
-        Calendar.SUNDAY to "일",
-    )
-    return listOf(
-        Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
-        Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY,
-    ).filter { it in days }.joinToString(" ") { dayNames[it] ?: "" }
-}
+private fun formatRepeatDays(days: Set<Int>): String =
+    DAY_ORDER.filter { it in days }.joinToString(" ") { DAY_NAMES[it] ?: "" }
