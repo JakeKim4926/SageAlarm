@@ -25,5 +25,6 @@ object DatabaseModule {
         ).build()
 
     @Provides
+    @Singleton
     fun provideAlarmDao(database: AlarmDatabase): AlarmDao = database.alarmDao()
 }
