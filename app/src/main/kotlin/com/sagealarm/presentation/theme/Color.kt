@@ -2,13 +2,18 @@ package com.sagealarm.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Primary = Color(0xFF1A1A2E)
-val OnPrimary = Color(0xFFFFFFFF)
-val Surface = Color(0xFF16213E)
-val OnSurface = Color(0xFFE0E0E0)
-val Background = Color(0xFF0F3460)
-val OnBackground = Color(0xFFFFFFFF)
-val Accent = Color(0xFFE94560)
-val OnAccent = Color(0xFFFFFFFF)
-val CardBackground = Color(0xFF1E2A45)
-val Disabled = Color(0xFF4A4A6A)
+// Backgrounds
+val Ivory = Color(0xFFFFFDF7)        // 배경 — 아이보리 화이트
+val Beige = Color(0xFFF5F0E8)        // 서피스 / 카드 — 따뜻한 베이지
+val WarmWhite = Color(0xFFFFFFFF)    // 순백 — 버튼 위 텍스트
+
+// Text
+val WarmBrown = Color(0xFF3A2F1E)    // 기본 텍스트
+val WarmBrownMuted = Color(0xFF7A6A56) // 보조 텍스트 / 힌트
+
+// Interactive
+val Taupe = Color(0xFFA89070)        // 주 인터랙션 (버튼, FAB, 활성 상태)
+val TaupeLight = Color(0xFFC8B89A)   // 보조 인터랙션
+
+// Disabled / Outline
+val BeigeMuted = Color(0xFFCEC4B4)
