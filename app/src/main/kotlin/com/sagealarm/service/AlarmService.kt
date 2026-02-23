@@ -38,7 +38,7 @@ class AlarmService : Service() {
     private var player: ExoPlayer? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    override fun onBind(intent: IBinder?): IBinder? = null
+    override fun onBind(intent: Intent): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
