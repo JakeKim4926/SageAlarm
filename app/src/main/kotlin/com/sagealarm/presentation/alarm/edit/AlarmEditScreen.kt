@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
@@ -41,6 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
+import com.sagealarm.presentation.theme.Beige
+import com.sagealarm.presentation.theme.Ivory
+import com.sagealarm.presentation.theme.Taupe
+import com.sagealarm.presentation.theme.WarmBrown
+import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -97,7 +103,21 @@ fun AlarmEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            TimePicker(state = timePickerState, modifier = Modifier.fillMaxWidth())
+            TimePicker(
+                state = timePickerState,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TimePickerDefaults.colors(
+                    clockDialColor = Beige,
+                    clockDialSelectedContentColor = WarmWhite,
+                    clockDialUnselectedContentColor = WarmBrown,
+                    selectorColor = Taupe,
+                    containerColor = Ivory,
+                    timeSelectorSelectedContainerColor = Taupe,
+                    timeSelectorUnselectedContainerColor = Beige,
+                    timeSelectorSelectedContentColor = WarmWhite,
+                    timeSelectorUnselectedContentColor = WarmBrown,
+                ),
+            )
 
             OutlinedTextField(
                 value = uiState.label,
