@@ -49,6 +49,7 @@ import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
 import com.sagealarm.presentation.theme.Taupe
 import com.sagealarm.presentation.theme.WarmBrown
+import com.sagealarm.presentation.theme.WarmBrownMuted
 import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
 
@@ -93,7 +94,12 @@ fun AlarmEditScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -114,18 +120,18 @@ fun AlarmEditScreen(
                 colors = TimePickerDefaults.colors(
                     clockDialColor = Beige,
                     clockDialSelectedContentColor = WarmWhite,
-                    clockDialUnselectedContentColor = WarmBrown,
+                    clockDialUnselectedContentColor = WarmBrownMuted,
                     selectorColor = Taupe,
                     containerColor = Ivory,
                     timeSelectorSelectedContainerColor = Taupe,
                     timeSelectorUnselectedContainerColor = Beige,
                     timeSelectorSelectedContentColor = WarmWhite,
-                    timeSelectorUnselectedContentColor = WarmBrown,
+                    timeSelectorUnselectedContentColor = WarmBrownMuted,
                     periodSelectorBorderColor = BeigeMuted,
                     periodSelectorSelectedContainerColor = Taupe,
                     periodSelectorUnselectedContainerColor = Beige,
                     periodSelectorSelectedContentColor = WarmWhite,
-                    periodSelectorUnselectedContentColor = WarmBrown,
+                    periodSelectorUnselectedContentColor = WarmBrownMuted,
                 ),
             )
 

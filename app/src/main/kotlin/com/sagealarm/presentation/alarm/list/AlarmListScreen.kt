@@ -61,6 +61,8 @@ fun AlarmListScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
         },
@@ -138,13 +140,22 @@ private fun AlarmItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = formatTime(alarm.hour, alarm.minute),
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Light,
-                    color = if (alarm.isEnabled) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                )
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = formatTime(alarm.hour, alarm.minute),
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Light,
+                        color = if (alarm.isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    )
+                    Text(
+                        text = if (alarm.hour < 12) "오전" else "오후",
+                        fontSize = 14.sp,
+                        color = if (alarm.isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 7.dp),
+                    )
+                }
                 if (alarm.label.isNotBlank()) {
                     Text(
                         text = alarm.label,
@@ -184,8 +195,14 @@ private val DAY_ORDER = listOf(
     Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY,
 )
 
-private fun formatTime(hour: Int, minute: Int): String =
-    "%02d:%02d".format(hour, minute)
+private fun formatTime(hour: Int, minute: Int): String {
+    val hour12 = when {
+        hour == 0 -> 12
+        hour > 12 -> hour - 12
+        else -> hour
+    }
+    return "$hour12:%02d".format(minute)
+}
 
 private fun formatRepeatDays(days: Set<Int>): String =
     DAY_ORDER.filter { it in days }.joinToString(" ") { DAY_NAMES[it] ?: "" }

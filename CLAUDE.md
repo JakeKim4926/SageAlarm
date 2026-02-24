@@ -134,3 +134,5 @@ class AndroidTtsPlayer(...) : TtsPlayer
 - 화면 수 최소화
 - 불필요한 설정 항목 없음
 - 한 화면에서 한 가지 작업만
+- 텍스트 색상은 배경과 조화를 위해 기본 텍스트 `WarmBrown`, 보조/UI 텍스트 `WarmBrownMuted` 사용 
+— Compose 컴포넌트 색상은 반드시 명시적으로 지정할 것 (Material3 기본값 의존 금지)
