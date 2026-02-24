@@ -97,6 +97,7 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         ttsPlayer.stop()
+        ttsPlayer.release()
         player?.stop()
         player?.release()
         player = null

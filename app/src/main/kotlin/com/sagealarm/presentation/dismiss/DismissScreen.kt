@@ -3,6 +3,7 @@ package com.sagealarm.presentation.dismiss
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -19,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,13 +94,14 @@ private fun NumberPuzzle(
     nextIndex: Int,
     onNumberClicked: (Int) -> Unit,
 ) {
-    val density = LocalDensity.current
     val buttonSizeDp = 64.dp
-    val buttonSizePx = with(density) { buttonSizeDp.toPx() }
     val screenWidthFraction = 0.85f
     val screenHeightFraction = 0.75f
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val availableWidth = maxWidth
+        val availableHeight = maxHeight
+
         numberItems.forEach { item ->
             val isNextTarget = sortedTarget.getOrNull(nextIndex) == item.value
             val isAlreadyTapped = sortedTarget.indexOf(item.value) < nextIndex
@@ -109,8 +110,8 @@ private fun NumberPuzzle(
                 NumberButton(
                     value = item.value,
                     isHighlighted = isNextTarget,
-                    xFraction = item.xFraction * screenWidthFraction,
-                    yFraction = item.yFraction * screenHeightFraction,
+                    xOffset = availableWidth * item.xFraction * screenWidthFraction,
+                    yOffset = availableHeight * item.yFraction * screenHeightFraction,
                     buttonSizeDp = buttonSizeDp,
                     onClick = { onNumberClicked(item.value) },
                 )
@@ -123,8 +124,8 @@ private fun NumberPuzzle(
 private fun NumberButton(
     value: Int,
     isHighlighted: Boolean,
-    xFraction: Float,
-    yFraction: Float,
+    xOffset: androidx.compose.ui.unit.Dp,
+    yOffset: androidx.compose.ui.unit.Dp,
     buttonSizeDp: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit,
 ) {
@@ -135,8 +136,8 @@ private fun NumberButton(
                 .size(buttonSizeDp)
                 .align(Alignment.TopStart)
                 .offset(
-                    x = (xFraction * 100).dp,
-                    y = (yFraction * 100).dp,
+                    x = xOffset,
+                    y = yOffset,
                 ),
             shape = CircleShape,
             colors = ButtonDefaults.buttonColors(
