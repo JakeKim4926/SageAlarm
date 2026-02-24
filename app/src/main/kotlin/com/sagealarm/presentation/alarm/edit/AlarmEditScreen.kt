@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
 import com.sagealarm.presentation.theme.Beige
+import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
 import com.sagealarm.presentation.theme.Taupe
 import com.sagealarm.presentation.theme.WarmBrown
@@ -116,6 +117,11 @@ fun AlarmEditScreen(
                     timeSelectorUnselectedContainerColor = Beige,
                     timeSelectorSelectedContentColor = WarmWhite,
                     timeSelectorUnselectedContentColor = WarmBrown,
+                    periodSelectorBorderColor = BeigeMuted,
+                    periodSelectorSelectedContainerColor = Taupe,
+                    periodSelectorUnselectedContainerColor = Beige,
+                    periodSelectorSelectedContentColor = WarmWhite,
+                    periodSelectorUnselectedContentColor = WarmBrown,
                 ),
             )
 
