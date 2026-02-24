@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -36,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
 import com.sagealarm.domain.model.Alarm
+import com.sagealarm.presentation.theme.Beige
+import com.sagealarm.presentation.theme.BeigeMuted
+import com.sagealarm.presentation.theme.Taupe
+import com.sagealarm.presentation.theme.WarmBrownMuted
+import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -194,6 +201,14 @@ private fun AlarmItem(
             Switch(
                 checked = alarm.isEnabled,
                 onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = Taupe,
+                    checkedThumbColor = WarmWhite,
+                    checkedBorderColor = Color.Transparent,
+                    uncheckedTrackColor = Beige,
+                    uncheckedThumbColor = WarmBrownMuted,
+                    uncheckedBorderColor = BeigeMuted,
+                ),
             )
         }
     }
