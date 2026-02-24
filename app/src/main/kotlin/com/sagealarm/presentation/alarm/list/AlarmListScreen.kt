@@ -1,12 +1,15 @@
 package com.sagealarm.presentation.alarm.list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,11 +35,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sagealarm.R
 import com.sagealarm.domain.model.Alarm
 import java.util.Calendar
 
@@ -77,23 +83,35 @@ fun AlarmListScreen(
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
-        if (alarms.isEmpty()) {
-            EmptyAlarmList(modifier = Modifier.padding(paddingValues))
-        } else {
-            LazyColumn(
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(R.drawable.ic_background),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(items = alarms, key = { it.id }) { alarm ->
-                    AlarmItem(
-                        alarm = alarm,
-                        onToggle = { isEnabled -> viewModel.toggleAlarm(alarm.id, isEnabled) },
-                        onEdit = { onEditAlarm(alarm.id) },
-                        onDelete = { viewModel.deleteAlarm(alarm) },
-                    )
+                    .fillMaxWidth(0.825f)
+                    .aspectRatio(1f)
+                    .align(Alignment.Center),
+                alpha = 0.18f,
+                contentScale = ContentScale.Fit,
+            )
+            if (alarms.isEmpty()) {
+                EmptyAlarmList(modifier = Modifier.padding(paddingValues))
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(items = alarms, key = { it.id }) { alarm ->
+                        AlarmItem(
+                            alarm = alarm,
+                            onToggle = { isEnabled -> viewModel.toggleAlarm(alarm.id, isEnabled) },
+                            onEdit = { onEditAlarm(alarm.id) },
+                            onDelete = { viewModel.deleteAlarm(alarm) },
+                        )
+                    }
                 }
             }
         }
