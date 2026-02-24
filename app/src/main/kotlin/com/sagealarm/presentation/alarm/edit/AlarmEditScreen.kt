@@ -3,26 +3,27 @@ package com.sagealarm.presentation.alarm.edit
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +39,12 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
@@ -53,7 +57,7 @@ import com.sagealarm.presentation.theme.WarmBrownMuted
 import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmEditScreen(
     alarmId: Long,
@@ -135,35 +139,50 @@ fun AlarmEditScreen(
                 ),
             )
 
-            OutlinedTextField(
-                value = uiState.label,
-                onValueChange = viewModel::updateLabel,
-                label = { Text(stringResource(R.string.label_hint)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-
-            OutlinedTextField(
-                value = uiState.ttsMessage,
-                onValueChange = viewModel::updateTtsMessage,
-                label = { Text(stringResource(R.string.tts_message_hint)) },
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 3,
-                supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
-            )
+            Column {
+                OutlinedTextField(
+                    value = uiState.label,
+                    onValueChange = viewModel::updateLabel,
+                    label = { Text(stringResource(R.string.label_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    supportingText = { Text("${uiState.label.length}/${AlarmEditViewModel.MAX_LABEL_LENGTH}") },
+                )
+                OutlinedTextField(
+                    value = uiState.ttsMessage,
+                    onValueChange = viewModel::updateTtsMessage,
+                    label = { Text(stringResource(R.string.tts_message_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3,
+                    supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
+                )
+            }
 
             Text("반복 요일", style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onBackground)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(modifier = Modifier.fillMaxWidth()) {
                 DayChip.entries.forEach { day ->
-                    FilterChip(
-                        selected = day.calendarValue in uiState.repeatDays,
-                        onClick = { viewModel.toggleRepeatDay(day.calendarValue) },
-                        label = { Text(day.label) },
-                    )
+                    val selected = day.calendarValue in uiState.repeatDays
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(3.dp)
+                            .aspectRatio(1f)
+                            .clip(CircleShape)
+                            .background(if (selected) Taupe else Beige)
+                            .clickable { viewModel.toggleRepeatDay(day.calendarValue) },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = day.label,
+                            fontSize = 13.sp,
+                            color = if (selected) WarmWhite else WarmBrownMuted,
+                        )
+                    }
                 }
             }
 
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
                 onClick = { musicPicker.launch("audio/*") },
                 modifier = Modifier.fillMaxWidth(),
@@ -174,13 +193,12 @@ fun AlarmEditScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             Button(
                 onClick = { viewModel.saveAlarm() },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.save))
+            }
             }
         }
     }

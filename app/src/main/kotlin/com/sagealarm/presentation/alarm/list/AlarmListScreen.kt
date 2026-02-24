@@ -69,7 +69,8 @@ fun AlarmListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddAlarm,
-                containerColor = MaterialTheme.colorScheme.secondary,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {
                 Icon(Icons.Default.Add, contentDescription = "알람 추가")
             }

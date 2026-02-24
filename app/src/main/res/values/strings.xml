@@ -8,7 +8,7 @@
     <string name="add_alarm">알람 추가</string>
     <string name="edit_alarm">알람 편집</string>
     <string name="label_hint">메모 (선택)</string>
-    <string name="tts_message_hint">TTS 메시지 (최대 100자)</string>
+    <string name="tts_message_hint">TTS 메시지 (최대 50자)</string>
     <string name="select_music">음악 선택</string>
     <string name="no_music_selected">기본 알람음</string>
     <string name="save">저장</string>

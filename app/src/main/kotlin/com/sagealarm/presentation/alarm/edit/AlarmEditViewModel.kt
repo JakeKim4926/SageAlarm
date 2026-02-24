@@ -68,7 +68,9 @@ class AlarmEditViewModel @Inject constructor(
 
     fun updateHour(hour: Int) = _uiState.update { it.copy(hour = hour) }
     fun updateMinute(minute: Int) = _uiState.update { it.copy(minute = minute) }
-    fun updateLabel(label: String) = _uiState.update { it.copy(label = label) }
+    fun updateLabel(label: String) {
+        if (label.length <= MAX_LABEL_LENGTH) _uiState.update { it.copy(label = label) }
+    }
     fun updateTtsMessage(msg: String) {
         if (msg.length <= MAX_TTS_LENGTH) _uiState.update { it.copy(ttsMessage = msg) }
     }
@@ -109,6 +111,7 @@ class AlarmEditViewModel @Inject constructor(
     }
 
     companion object {
-        const val MAX_TTS_LENGTH = 100
+        const val MAX_LABEL_LENGTH = 50
+        const val MAX_TTS_LENGTH = 50
     }
 }
