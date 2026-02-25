@@ -39,9 +39,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,22 +76,20 @@ fun AlarmEditScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-    val timePickerState = rememberTimePickerState(
-        initialHour = uiState.hour,
-        initialMinute = uiState.minute,
-    )
+    val context = LocalContext.current
+    val timePickerState = remember(uiState.isDataLoaded) {
+        TimePickerState(
+            initialHour = uiState.hour,
+            initialMinute = uiState.minute,
+            is24Hour = android.text.format.DateFormat.is24HourFormat(context),
+        )
+    }
     val musicPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
     ) { uri: Uri? -> viewModel.updateMusicUri(uri?.toString()) }
 
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
-    LaunchedEffect(uiState.isDataLoaded) {
-        if (uiState.isDataLoaded) {
-            timePickerState.hour = uiState.hour
-            timePickerState.minute = uiState.minute
-        }
-    }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
         viewModel.clearDuplicateError()
     }
