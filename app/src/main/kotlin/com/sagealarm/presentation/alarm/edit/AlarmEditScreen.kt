@@ -31,6 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -70,6 +74,7 @@ fun AlarmEditScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val timePickerState = rememberTimePickerState(
         initialHour = uiState.hour,
         initialMinute = uiState.minute,
@@ -88,6 +93,15 @@ fun AlarmEditScreen(
     }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
         viewModel.clearDuplicateError()
+    }
+    LaunchedEffect(uiState.isDuplicateTime) {
+        if (uiState.isDuplicateTime) {
+            snackbarHostState.showSnackbar(
+                message = "이미 같은 시간의 알람이 있습니다",
+                duration = SnackbarDuration.Short,
+            )
+            viewModel.clearDuplicateError()
+        }
     }
 
     if (showDeleteDialog) {
@@ -153,6 +167,15 @@ fun AlarmEditScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
             )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.inverseSurface,
+                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                )
+            }
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
@@ -246,15 +269,6 @@ fun AlarmEditScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.save))
-            }
-
-            if (uiState.isDuplicateTime) {
-                Text(
-                    text = "이미 같은 시간의 알람이 있습니다",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
             }
         }
