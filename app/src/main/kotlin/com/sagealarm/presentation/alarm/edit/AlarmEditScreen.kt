@@ -57,7 +57,6 @@ import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
 import com.sagealarm.presentation.theme.Taupe
-import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
@@ -81,9 +80,14 @@ fun AlarmEditScreen(
 
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
+    LaunchedEffect(uiState.isDataLoaded) {
+        if (uiState.isDataLoaded) {
+            timePickerState.hour = uiState.hour
+            timePickerState.minute = uiState.minute
+        }
+    }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
-        viewModel.updateHour(timePickerState.hour)
-        viewModel.updateMinute(timePickerState.minute)
+        viewModel.clearDuplicateError()
     }
 
     if (showDeleteDialog) {
@@ -237,6 +241,13 @@ fun AlarmEditScreen(
                 )
             }
 
+            Button(
+                onClick = { viewModel.saveAlarm(timePickerState.hour, timePickerState.minute) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.save))
+            }
+
             if (uiState.isDuplicateTime) {
                 Text(
                     text = "이미 같은 시간의 알람이 있습니다",
@@ -244,13 +255,6 @@ fun AlarmEditScreen(
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
-
-            Button(
-                onClick = { viewModel.saveAlarm() },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.save))
             }
             }
         }

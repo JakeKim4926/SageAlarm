@@ -25,6 +25,7 @@ data class AlarmEditUiState(
     val isLoading: Boolean = false,
     val isNavigateBack: Boolean = false,
     val isDuplicateTime: Boolean = false,
+    val isDataLoaded: Boolean = false,
 )
 
 @HiltViewModel
@@ -42,7 +43,13 @@ class AlarmEditViewModel @Inject constructor(
     fun loadAlarm(alarmId: Long) {
         if (alarmId == -1L) {
             val now = Calendar.getInstance()
-            _uiState.update { it.copy(hour = now.get(Calendar.HOUR_OF_DAY), minute = now.get(Calendar.MINUTE)) }
+            _uiState.update {
+                it.copy(
+                    hour = now.get(Calendar.HOUR_OF_DAY),
+                    minute = now.get(Calendar.MINUTE),
+                    isDataLoaded = true,
+                )
+            }
             return
         }
         viewModelScope.launch {
@@ -59,19 +66,19 @@ class AlarmEditViewModel @Inject constructor(
                         repeatDays = alarm.repeatDays,
                         musicUri = alarm.musicUri,
                         isLoading = false,
+                        isDataLoaded = true,
                     )
                 }
             } else {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, isDataLoaded = true) }
             }
         }
     }
 
-    fun updateHour(hour: Int) = _uiState.update { it.copy(hour = hour, isDuplicateTime = false) }
-    fun updateMinute(minute: Int) = _uiState.update { it.copy(minute = minute, isDuplicateTime = false) }
     fun updateLabel(label: String) {
         if (label.length <= MAX_LABEL_LENGTH) _uiState.update { it.copy(label = label) }
     }
+
     fun updateTtsMessage(msg: String) {
         if (msg.length <= MAX_TTS_LENGTH) _uiState.update { it.copy(ttsMessage = msg) }
     }
@@ -86,18 +93,20 @@ class AlarmEditViewModel @Inject constructor(
 
     fun updateMusicUri(uri: String?) = _uiState.update { it.copy(musicUri = uri) }
 
-    fun saveAlarm() {
+    fun clearDuplicateError() = _uiState.update { it.copy(isDuplicateTime = false) }
+
+    fun saveAlarm(hour: Int, minute: Int) {
         viewModelScope.launch {
-            val state = _uiState.value
-            val existing = alarmRepository.getAlarmByTime(state.hour, state.minute)
+            val existing = alarmRepository.getAlarmByTime(hour, minute)
             val isSelf = existing?.id == editingAlarm?.id
             if (existing != null && !isSelf) {
                 _uiState.update { it.copy(isDuplicateTime = true) }
                 return@launch
             }
-            val alarm = (editingAlarm ?: Alarm(hour = state.hour, minute = state.minute)).copy(
-                hour = state.hour,
-                minute = state.minute,
+            val state = _uiState.value
+            val alarm = (editingAlarm ?: Alarm(hour = hour, minute = minute)).copy(
+                hour = hour,
+                minute = minute,
                 label = state.label,
                 ttsMessage = state.ttsMessage,
                 repeatDays = state.repeatDays,
