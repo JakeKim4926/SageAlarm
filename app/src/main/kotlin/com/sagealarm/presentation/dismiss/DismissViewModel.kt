@@ -25,8 +25,6 @@ data class NumberItem(
 data class DismissUiState(
     val isPuzzleEnabled: Boolean = true,
     val numberItems: List<NumberItem> = emptyList(),
-    val sortedTarget: List<Int> = emptyList(),
-    val nextIndex: Int = 0,
     val isDismissed: Boolean = false,
 )
 
@@ -37,6 +35,9 @@ class DismissViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(DismissUiState())
     val uiState: StateFlow<DismissUiState> = _uiState.asStateFlow()
+
+    private var sortedTarget: List<Int> = emptyList()
+    private var nextIndex: Int = 0
 
     init {
         viewModelScope.launch {
@@ -52,17 +53,14 @@ class DismissViewModel @Inject constructor(
     }
 
     fun onNumberClicked(value: Int) {
-        val state = _uiState.value
-        if (state.isDismissed) return
+        if (_uiState.value.isDismissed) return
 
-        val expected = state.sortedTarget.getOrNull(state.nextIndex) ?: return
+        val expected = sortedTarget.getOrNull(nextIndex) ?: return
 
         if (value == expected) {
-            val nextIndex = state.nextIndex + 1
-            if (nextIndex >= state.sortedTarget.size) {
+            nextIndex++
+            if (nextIndex >= sortedTarget.size) {
                 _uiState.update { it.copy(isDismissed = true) }
-            } else {
-                _uiState.update { it.copy(nextIndex = nextIndex) }
             }
         } else {
             generatePuzzle()
@@ -71,7 +69,8 @@ class DismissViewModel @Inject constructor(
 
     private fun generatePuzzle() {
         val numbers = (NUMBER_MIN..NUMBER_MAX).shuffled().take(PUZZLE_COUNT)
-        val sorted = numbers.sorted()
+        sortedTarget = numbers.sorted()
+        nextIndex = 0
         val items = numbers.map { value ->
             NumberItem(
                 value = value,
@@ -82,8 +81,6 @@ class DismissViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 numberItems = items,
-                sortedTarget = sorted,
-                nextIndex = 0,
                 isDismissed = false,
             )
         }

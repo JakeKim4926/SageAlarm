@@ -14,7 +14,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import com.sagealarm.presentation.theme.Beige
+import com.sagealarm.presentation.theme.BeigeMuted
+import com.sagealarm.presentation.theme.Taupe
+import com.sagealarm.presentation.theme.WarmBrownMuted
+import com.sagealarm.presentation.theme.WarmWhite
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -90,7 +97,18 @@ private fun SettingToggleRow(
             Text(text = description, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = Taupe,
+                checkedThumbColor = WarmWhite,
+                checkedBorderColor = Color.Transparent,
+                uncheckedTrackColor = Beige,
+                uncheckedThumbColor = WarmBrownMuted,
+                uncheckedBorderColor = BeigeMuted,
+            ),
+        )
     }
 }
 

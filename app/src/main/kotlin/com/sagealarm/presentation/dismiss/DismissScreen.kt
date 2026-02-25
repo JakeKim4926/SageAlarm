@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
 import com.sagealarm.service.AlarmService
+
+private const val SCREEN_WIDTH_FRACTION = 0.85f
+private const val SCREEN_HEIGHT_FRACTION = 0.75f
+private val BUTTON_SIZE = 64.dp
 
 @Composable
 fun DismissScreen(
@@ -61,17 +66,7 @@ fun DismissScreen(
 
             NumberPuzzle(
                 numberItems = uiState.numberItems,
-                sortedTarget = uiState.sortedTarget,
-                nextIndex = uiState.nextIndex,
                 onNumberClicked = viewModel::onNumberClicked,
-            )
-
-            ProgressIndicator(
-                current = uiState.nextIndex,
-                total = uiState.sortedTarget.size,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 48.dp),
             )
         }
     } else {
@@ -90,32 +85,16 @@ fun DismissScreen(
 @Composable
 private fun NumberPuzzle(
     numberItems: List<NumberItem>,
-    sortedTarget: List<Int>,
-    nextIndex: Int,
     onNumberClicked: (Int) -> Unit,
 ) {
-    val buttonSizeDp = 64.dp
-    val screenWidthFraction = 0.85f
-    val screenHeightFraction = 0.75f
-
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val availableWidth = maxWidth
-        val availableHeight = maxHeight
-
         numberItems.forEach { item ->
-            val isNextTarget = sortedTarget.getOrNull(nextIndex) == item.value
-            val isAlreadyTapped = sortedTarget.indexOf(item.value) < nextIndex
-
-            if (!isAlreadyTapped) {
-                NumberButton(
-                    value = item.value,
-                    isHighlighted = isNextTarget,
-                    xOffset = availableWidth * item.xFraction * screenWidthFraction,
-                    yOffset = availableHeight * item.yFraction * screenHeightFraction,
-                    buttonSizeDp = buttonSizeDp,
-                    onClick = { onNumberClicked(item.value) },
-                )
-            }
+            NumberButton(
+                value = item.value,
+                xOffset = maxWidth * item.xFraction * SCREEN_WIDTH_FRACTION,
+                yOffset = maxHeight * item.yFraction * SCREEN_HEIGHT_FRACTION,
+                onClick = { onNumberClicked(item.value) },
+            )
         }
     }
 }
@@ -123,26 +102,22 @@ private fun NumberPuzzle(
 @Composable
 private fun NumberButton(
     value: Int,
-    isHighlighted: Boolean,
     xOffset: androidx.compose.ui.unit.Dp,
     yOffset: androidx.compose.ui.unit.Dp,
-    buttonSizeDp: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Button(
             onClick = onClick,
             modifier = Modifier
-                .size(buttonSizeDp)
+                .size(BUTTON_SIZE)
                 .align(Alignment.TopStart)
-                .offset(
-                    x = xOffset,
-                    y = yOffset,
-                ),
+                .offset(x = xOffset, y = yOffset),
             shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isHighlighted) MaterialTheme.colorScheme.secondary
-                else MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
             ),
         ) {
             Text(
@@ -152,18 +127,4 @@ private fun NumberButton(
             )
         }
     }
-}
-
-@Composable
-private fun ProgressIndicator(
-    current: Int,
-    total: Int,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = "$current / $total",
-        modifier = modifier,
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onBackground,
-    )
 }
