@@ -9,6 +9,7 @@ import com.sagealarm.domain.usecase.ToggleAlarmUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +24,10 @@ class AlarmListViewModel @Inject constructor(
     val alarms: StateFlow<List<Alarm>> = getAlarmsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val canAddAlarm: StateFlow<Boolean> = alarms
+        .map { it.size < MAX_ALARM_COUNT }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
     fun toggleAlarm(id: Long, isEnabled: Boolean) {
         viewModelScope.launch {
             toggleAlarmUseCase(id, isEnabled)
@@ -33,5 +38,9 @@ class AlarmListViewModel @Inject constructor(
         viewModelScope.launch {
             deleteAlarmUseCase(alarm)
         }
+    }
+
+    companion object {
+        const val MAX_ALARM_COUNT = 30
     }
 }

@@ -67,6 +67,7 @@ fun AlarmListScreen(
     viewModel: AlarmListViewModel = hiltViewModel(),
 ) {
     val alarms by viewModel.alarms.collectAsStateWithLifecycle()
+    val canAddAlarm by viewModel.canAddAlarm.collectAsStateWithLifecycle()
     var alarmToDelete by remember { mutableStateOf<Alarm?>(null) }
 
     alarmToDelete?.let { alarm ->
@@ -110,7 +111,16 @@ fun AlarmListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("SageAlarm") },
+                title = {
+                    Column {
+                        Text("SageAlarm")
+                        Text(
+                            text = "${alarms.size} / ${AlarmListViewModel.MAX_ALARM_COUNT}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = WarmBrownMuted,
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "설정")
@@ -125,8 +135,9 @@ fun AlarmListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddAlarm,
-                containerColor = MaterialTheme.colorScheme.primary,
+                onClick = { if (canAddAlarm) onAddAlarm() },
+                containerColor = if (canAddAlarm) MaterialTheme.colorScheme.primary
+                                 else MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {
                 Icon(Icons.Default.Add, contentDescription = "알람 추가")
