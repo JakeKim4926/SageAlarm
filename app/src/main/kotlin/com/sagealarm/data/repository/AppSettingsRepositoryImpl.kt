@@ -11,7 +11,4 @@ class AppSettingsRepositoryImpl @Inject constructor(
 ) : AppSettingsRepository {
 
     override fun getSettings(): Flow<AppSettings> = dataStore.getSettings()
-
-    override suspend fun updateDismissPuzzleEnabled(enabled: Boolean) =
-        dataStore.updateDismissPuzzleEnabled(enabled)
 }

@@ -1,15 +1,16 @@
 package com.sagealarm.presentation.dismiss
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sagealarm.domain.repository.AppSettingsRepository
+import com.sagealarm.domain.repository.AlarmRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.random.Random
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import javax.inject.Inject
 
 private const val PUZZLE_COUNT = 5
@@ -23,14 +24,15 @@ data class NumberItem(
 )
 
 data class DismissUiState(
-    val isPuzzleEnabled: Boolean = true,
+    val isPuzzleEnabled: Boolean = false,
     val numberItems: List<NumberItem> = emptyList(),
     val isDismissed: Boolean = false,
 )
 
 @HiltViewModel
 class DismissViewModel @Inject constructor(
-    private val settingsRepository: AppSettingsRepository,
+    private val alarmRepository: AlarmRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DismissUiState())
@@ -40,10 +42,10 @@ class DismissViewModel @Inject constructor(
     private var nextIndex: Int = 0
 
     init {
+        val alarmId = savedStateHandle.get<Long>("alarmId") ?: -1L
         viewModelScope.launch {
-            settingsRepository.getSettings().collect { settings ->
-                _uiState.update { it.copy(isPuzzleEnabled = settings.isDismissPuzzleEnabled) }
-            }
+            val alarm = alarmRepository.getAlarmById(alarmId)
+            _uiState.update { it.copy(isPuzzleEnabled = alarm?.isPuzzleEnabled ?: false) }
         }
         generatePuzzle()
     }

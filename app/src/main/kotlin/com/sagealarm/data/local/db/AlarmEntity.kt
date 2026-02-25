@@ -14,4 +14,5 @@ data class AlarmEntity(
     val repeatDays: String, // Comma-separated Calendar day values (e.g. "2,3,4")
     val musicUri: String?,
     val isEnabled: Boolean,
+    val isPuzzleEnabled: Boolean,
 )

@@ -13,25 +13,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.Color
-import com.sagealarm.presentation.theme.Beige
-import com.sagealarm.presentation.theme.BeigeMuted
-import com.sagealarm.presentation.theme.Taupe
-import com.sagealarm.presentation.theme.WarmBrownMuted
-import com.sagealarm.presentation.theme.WarmWhite
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.BuildConfig
 import com.sagealarm.R
 
@@ -39,10 +28,7 @@ import com.sagealarm.R
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val settings by viewModel.settings.collectAsStateWithLifecycle()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,52 +49,12 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
         ) {
-            SettingToggleRow(
-                title = "알람 해제 퍼즐",
-                description = "숫자 순서대로 눌러 알람 해제",
-                checked = settings.isDismissPuzzleEnabled,
-                onCheckedChange = viewModel::toggleDismissPuzzle,
-            )
             HorizontalDivider()
             SettingInfoRow(
                 title = stringResource(R.string.version),
                 value = BuildConfig.VERSION_NAME,
             )
         }
-    }
-}
-
-@Composable
-private fun SettingToggleRow(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground)
-            Text(text = description, style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = Taupe,
-                checkedThumbColor = WarmWhite,
-                checkedBorderColor = Color.Transparent,
-                uncheckedTrackColor = Beige,
-                uncheckedThumbColor = WarmBrownMuted,
-                uncheckedBorderColor = BeigeMuted,
-            ),
-        )
     }
 }
 
@@ -120,9 +66,16 @@ private fun SettingInfoRow(title: String, value: String) {
             .padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = title, style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.weight(1f))
-        Text(text = value, style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+        )
     }
 }

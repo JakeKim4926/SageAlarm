@@ -12,6 +12,7 @@ fun AlarmEntity.toDomain(): Alarm = Alarm(
     else repeatDays.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet(),
     musicUri = musicUri,
     isEnabled = isEnabled,
+    isPuzzleEnabled = isPuzzleEnabled,
 )
 
 fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
@@ -23,4 +24,5 @@ fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     repeatDays = repeatDays.joinToString(","),
     musicUri = musicUri,
     isEnabled = isEnabled,
+    isPuzzleEnabled = isPuzzleEnabled,
 )

@@ -54,5 +54,6 @@ fun NavGraph(startRoute: String = Screen.AlarmList.route) {
         composable(Screen.Settings.route) {
             SettingsScreen(onBack = { navController.popBackStack() })
         }
+
     }
 }

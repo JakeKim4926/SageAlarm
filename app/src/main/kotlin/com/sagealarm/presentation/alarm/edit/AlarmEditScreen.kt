@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +33,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -58,6 +62,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
+import com.sagealarm.presentation.theme.Beige
+import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
@@ -260,6 +266,31 @@ fun AlarmEditScreen(
                 Text(
                     if (uiState.musicUri != null) stringResource(R.string.select_music)
                     else stringResource(R.string.no_music_selected)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "알람 해제 퍼즐",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = uiState.isPuzzleEnabled,
+                    onCheckedChange = viewModel::updatePuzzleEnabled,
+                    colors = SwitchDefaults.colors(
+                        checkedTrackColor = Taupe,
+                        checkedThumbColor = WarmWhite,
+                        checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                        uncheckedTrackColor = Beige,
+                        uncheckedThumbColor = WarmBrownMuted,
+                        uncheckedBorderColor = BeigeMuted,
+                    ),
                 )
             }
 

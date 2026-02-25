@@ -9,4 +9,5 @@ data class Alarm(
     val repeatDays: Set<Int> = emptySet(), // Calendar.SUNDAY=1 ~ Calendar.SATURDAY=7
     val musicUri: String? = null,
     val isEnabled: Boolean = true,
+    val isPuzzleEnabled: Boolean = false,
 )

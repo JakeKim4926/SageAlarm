@@ -22,6 +22,7 @@ data class AlarmEditUiState(
     val ttsMessage: String = "",
     val repeatDays: Set<Int> = emptySet(),
     val musicUri: String? = null,
+    val isPuzzleEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isNavigateBack: Boolean = false,
     val isDuplicateTime: Boolean = false,
@@ -65,6 +66,7 @@ class AlarmEditViewModel @Inject constructor(
                         ttsMessage = alarm.ttsMessage,
                         repeatDays = alarm.repeatDays,
                         musicUri = alarm.musicUri,
+                        isPuzzleEnabled = alarm.isPuzzleEnabled,
                         isLoading = false,
                         isDataLoaded = true,
                     )
@@ -93,6 +95,8 @@ class AlarmEditViewModel @Inject constructor(
 
     fun updateMusicUri(uri: String?) = _uiState.update { it.copy(musicUri = uri) }
 
+    fun updatePuzzleEnabled(enabled: Boolean) = _uiState.update { it.copy(isPuzzleEnabled = enabled) }
+
     fun clearDuplicateError() = _uiState.update { it.copy(isDuplicateTime = false) }
 
     fun saveAlarm(hour: Int, minute: Int) {
@@ -111,6 +115,7 @@ class AlarmEditViewModel @Inject constructor(
                 ttsMessage = state.ttsMessage,
                 repeatDays = state.repeatDays,
                 musicUri = state.musicUri,
+                isPuzzleEnabled = state.isPuzzleEnabled,
                 isEnabled = true,
             )
             saveAlarmUseCase(alarm)

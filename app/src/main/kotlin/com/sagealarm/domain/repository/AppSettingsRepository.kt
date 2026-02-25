@@ -5,5 +5,4 @@ import kotlinx.coroutines.flow.Flow
 
 interface AppSettingsRepository {
     fun getSettings(): Flow<AppSettings>
-    suspend fun updateDismissPuzzleEnabled(enabled: Boolean)
 }
