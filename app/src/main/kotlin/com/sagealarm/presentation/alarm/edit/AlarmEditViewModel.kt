@@ -24,6 +24,7 @@ data class AlarmEditUiState(
     val musicUri: String? = null,
     val isLoading: Boolean = false,
     val isNavigateBack: Boolean = false,
+    val isDuplicateTime: Boolean = false,
 )
 
 @HiltViewModel
@@ -66,8 +67,8 @@ class AlarmEditViewModel @Inject constructor(
         }
     }
 
-    fun updateHour(hour: Int) = _uiState.update { it.copy(hour = hour) }
-    fun updateMinute(minute: Int) = _uiState.update { it.copy(minute = minute) }
+    fun updateHour(hour: Int) = _uiState.update { it.copy(hour = hour, isDuplicateTime = false) }
+    fun updateMinute(minute: Int) = _uiState.update { it.copy(minute = minute, isDuplicateTime = false) }
     fun updateLabel(label: String) {
         if (label.length <= MAX_LABEL_LENGTH) _uiState.update { it.copy(label = label) }
     }
@@ -88,6 +89,12 @@ class AlarmEditViewModel @Inject constructor(
     fun saveAlarm() {
         viewModelScope.launch {
             val state = _uiState.value
+            val existing = alarmRepository.getAlarmByTime(state.hour, state.minute)
+            val isSelf = existing?.id == editingAlarm?.id
+            if (existing != null && !isSelf) {
+                _uiState.update { it.copy(isDuplicateTime = true) }
+                return@launch
+            }
             val alarm = (editingAlarm ?: Alarm(hour = state.hour, minute = state.minute)).copy(
                 hour = state.hour,
                 minute = state.minute,

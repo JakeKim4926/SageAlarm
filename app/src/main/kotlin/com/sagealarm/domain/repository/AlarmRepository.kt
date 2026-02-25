@@ -10,4 +10,5 @@ interface AlarmRepository {
     suspend fun deleteAlarm(alarm: Alarm)
     suspend fun setAlarmEnabled(id: Long, isEnabled: Boolean): Alarm?
     suspend fun getEnabledAlarms(): List<Alarm>
+    suspend fun getAlarmByTime(hour: Int, minute: Int): Alarm?
 }

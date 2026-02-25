@@ -32,4 +32,7 @@ class AlarmRepositoryImpl @Inject constructor(
 
     override suspend fun getEnabledAlarms(): List<Alarm> =
         dao.getEnabledAlarms().map { it.toDomain() }
+
+    override suspend fun getAlarmByTime(hour: Int, minute: Int): Alarm? =
+        dao.getAlarmByTime(hour, minute)?.toDomain()
 }

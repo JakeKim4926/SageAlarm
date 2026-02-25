@@ -31,4 +31,7 @@ interface AlarmDao {
 
     @Query("SELECT * FROM alarms WHERE isEnabled = 1")
     suspend fun getEnabledAlarms(): List<AlarmEntity>
+
+    @Query("SELECT * FROM alarms WHERE hour = :hour AND minute = :minute LIMIT 1")
+    suspend fun getAlarmByTime(hour: Int, minute: Int): AlarmEntity?
 }

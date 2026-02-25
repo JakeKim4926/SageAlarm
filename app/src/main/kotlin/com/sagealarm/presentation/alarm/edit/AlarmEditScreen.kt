@@ -237,6 +237,15 @@ fun AlarmEditScreen(
                 )
             }
 
+            if (uiState.isDuplicateTime) {
+                Text(
+                    text = "이미 같은 시간의 알람이 있습니다",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             Button(
                 onClick = { viewModel.saveAlarm() },
                 modifier = Modifier.fillMaxWidth(),
