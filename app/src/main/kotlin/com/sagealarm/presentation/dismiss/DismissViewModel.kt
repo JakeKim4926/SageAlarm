@@ -61,8 +61,11 @@ class DismissViewModel @Inject constructor(
 
         if (value == expected) {
             nextIndex++
+            val remaining = _uiState.value.numberItems.filter { it.value != value }
             if (nextIndex >= sortedTarget.size) {
                 _uiState.update { it.copy(isDismissed = true) }
+            } else {
+                _uiState.update { it.copy(numberItems = remaining) }
             }
         } else {
             generatePuzzle()
@@ -71,7 +74,7 @@ class DismissViewModel @Inject constructor(
 
     private fun generatePuzzle() {
         val numbers = (NUMBER_MIN..NUMBER_MAX).shuffled().take(PUZZLE_COUNT)
-        sortedTarget = numbers.sorted()
+        sortedTarget = numbers.sortedDescending()
         nextIndex = 0
         val items = numbers.map { value ->
             NumberItem(

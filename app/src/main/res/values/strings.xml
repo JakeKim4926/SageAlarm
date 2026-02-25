@@ -14,6 +14,6 @@
     <string name="save">저장</string>
     <string name="delete">삭제</string>
     <string name="settings">설정</string>
-    <string name="dismiss_instruction">숫자를 순서대로 눌러 알람을 해제하세요</string>
+    <string name="dismiss_instruction">높은 숫자부터 순서대로 클릭해주세요</string>
     <string name="version">버전</string>
 </resources>
