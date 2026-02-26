@@ -24,6 +24,7 @@ import com.sagealarm.domain.repository.AlarmRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -45,6 +46,7 @@ class AlarmService : Service() {
     private var vibrator: Vibrator? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val isDismissed = AtomicBoolean(false)
+    private var alarmJob: Job? = null
 
     override fun onBind(intent: Intent): IBinder? = null
 
@@ -60,18 +62,18 @@ class AlarmService : Service() {
             return START_NOT_STICKY
         }
 
+        alarmJob?.cancel()
         isDismissed.set(false)
         ttsPlayer.initialize()
         startForeground(NOTIFICATION_ID, buildNotification(alarmId))
         launchDismissScreen(alarmId)
 
-        scope.launch {
+        alarmJob = scope.launch {
             val alarm = alarmRepository.getAlarmById(alarmId) ?: run { stopSelf(); return@launch }
             val maxRings = if (alarm.repeatCount == -1) Int.MAX_VALUE else alarm.repeatCount
 
-            repeat(maxRings) { index ->
-                if (isDismissed.get()) return@launch
-
+            var ringIndex = 0
+            while (ringIndex < maxRings && !isDismissed.get()) {
                 if (alarm.isMusicEnabled) {
                     playAlarmSound(alarm.musicUri)
                 }
@@ -85,9 +87,10 @@ class AlarmService : Service() {
                 delay(RING_DURATION_MS)
                 stopSoundAndVibration()
 
-                if (!isDismissed.get() && index < maxRings - 1) {
+                if (!isDismissed.get() && ringIndex < maxRings - 1) {
                     delay(alarm.alarmIntervalMinutes * 60_000L)
                 }
+                ringIndex++
             }
 
             if (!isDismissed.get()) stopSelf()
@@ -134,6 +137,8 @@ class AlarmService : Service() {
 
     private fun stopSoundAndVibration() {
         player?.stop()
+        player?.release()
+        player = null
         vibrator?.cancel()
     }
 
