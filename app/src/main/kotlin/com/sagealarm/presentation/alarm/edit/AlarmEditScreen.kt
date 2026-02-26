@@ -234,8 +234,32 @@ fun AlarmEditScreen(
                 )
             }
 
-            Text("반복 요일", style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "반복 요일",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                val allDaysSelected = DayChip.entries.all { it.calendarValue in uiState.repeatDays }
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(if (allDaysSelected) Taupe else Beige)
+                        .clickable { viewModel.toggleAllDays() }
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "매일",
+                        fontSize = 13.sp,
+                        color = if (allDaysSelected) WarmWhite else WarmBrownMuted,
+                    )
+                }
+            }
             Row(modifier = Modifier.fillMaxWidth()) {
                 DayChip.entries.forEach { day ->
                     val selected = day.calendarValue in uiState.repeatDays

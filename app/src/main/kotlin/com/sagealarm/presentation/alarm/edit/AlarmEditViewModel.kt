@@ -93,6 +93,12 @@ class AlarmEditViewModel @Inject constructor(
         }
     }
 
+    fun toggleAllDays() {
+        _uiState.update { state ->
+            state.copy(repeatDays = if (state.repeatDays == ALL_DAYS) emptySet() else ALL_DAYS)
+        }
+    }
+
     fun updateMusicUri(uri: String?) = _uiState.update { it.copy(musicUri = uri) }
 
     fun updatePuzzleEnabled(enabled: Boolean) = _uiState.update { it.copy(isPuzzleEnabled = enabled) }
@@ -134,5 +140,9 @@ class AlarmEditViewModel @Inject constructor(
     companion object {
         const val MAX_LABEL_LENGTH = 50
         const val MAX_TTS_LENGTH = 50
+        val ALL_DAYS = setOf(
+            Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+            Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY,
+        )
     }
 }
