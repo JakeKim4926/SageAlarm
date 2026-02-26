@@ -42,6 +42,8 @@ class AndroidTtsPlayer @Inject constructor(
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
     }
 
+    override fun isSpeaking(): Boolean = tts?.isSpeaking ?: false
+
     override fun stop() {
         tts?.stop()
     }

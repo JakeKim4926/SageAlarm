@@ -74,17 +74,33 @@ class AlarmService : Service() {
 
             var ringIndex = 0
             while (ringIndex < maxRings && !isDismissed.get()) {
+                // TTS: 1분 window 내에서 speak → 완료 대기 → 간격 → 반복
+                val ttsJob = if (alarm.isTtsEnabled && alarm.ttsMessage.isNotBlank()) {
+                    launch {
+                        val ringEnd = System.currentTimeMillis() + RING_DURATION_MS
+                        while (!isDismissed.get() && System.currentTimeMillis() < ringEnd) {
+                            ttsPlayer.speak(alarm.ttsMessage, Locale.getDefault())
+                            delay(TTS_START_DELAY_MS) // TTS 엔진이 재생 시작할 때까지 대기
+                            while (ttsPlayer.isSpeaking() && !isDismissed.get()) {
+                                delay(TTS_POLL_INTERVAL_MS)
+                            }
+                            if (!isDismissed.get() && System.currentTimeMillis() < ringEnd) {
+                                delay(TTS_GAP_MS)
+                            }
+                        }
+                    }
+                } else null
+
                 if (alarm.isMusicEnabled) {
                     playAlarmSound(alarm.musicUri)
-                }
-                if (alarm.isTtsEnabled && alarm.ttsMessage.isNotBlank()) {
-                    ttsPlayer.speak(alarm.ttsMessage, Locale.getDefault())
                 }
                 if (alarm.isVibrationEnabled) {
                     startVibration()
                 }
 
                 delay(RING_DURATION_MS)
+                ttsJob?.cancel()
+                ttsPlayer.stop()
                 stopSoundAndVibration()
 
                 if (!isDismissed.get() && ringIndex < maxRings - 1) {
@@ -207,5 +223,8 @@ class AlarmService : Service() {
         const val CHANNEL_ID = "sage_alarm_channel"
         const val NOTIFICATION_ID = 1001
         private const val RING_DURATION_MS = 60_000L
+        private const val TTS_START_DELAY_MS = 500L   // speak() 호출 후 isSpeaking()이 true로 바뀌기까지 대기
+        private const val TTS_POLL_INTERVAL_MS = 200L // isSpeaking() 폴링 간격
+        private const val TTS_GAP_MS = 1_000L         // TTS 반복 사이 간격
     }
 }
