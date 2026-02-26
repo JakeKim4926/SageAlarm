@@ -13,6 +13,11 @@ fun AlarmEntity.toDomain(): Alarm = Alarm(
     musicUri = musicUri,
     isEnabled = isEnabled,
     isPuzzleEnabled = isPuzzleEnabled,
+    alarmIntervalMinutes = alarmIntervalMinutes,
+    repeatCount = repeatCount,
+    isVibrationEnabled = isVibrationEnabled,
+    isTtsEnabled = isTtsEnabled,
+    isMusicEnabled = isMusicEnabled,
 )
 
 fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
@@ -25,4 +30,9 @@ fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     musicUri = musicUri,
     isEnabled = isEnabled,
     isPuzzleEnabled = isPuzzleEnabled,
+    alarmIntervalMinutes = alarmIntervalMinutes,
+    repeatCount = repeatCount,
+    isVibrationEnabled = isVibrationEnabled,
+    isTtsEnabled = isTtsEnabled,
+    isMusicEnabled = isMusicEnabled,
 )

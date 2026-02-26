@@ -10,7 +10,11 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -22,8 +26,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,7 +42,9 @@ class AlarmService : Service() {
     lateinit var ttsPlayer: TtsPlayer
 
     private var player: ExoPlayer? = null
+    private var vibrator: Vibrator? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private val isDismissed = AtomicBoolean(false)
 
     override fun onBind(intent: Intent): IBinder? = null
 
@@ -52,16 +60,37 @@ class AlarmService : Service() {
             return START_NOT_STICKY
         }
 
+        isDismissed.set(false)
         ttsPlayer.initialize()
         startForeground(NOTIFICATION_ID, buildNotification(alarmId))
         launchDismissScreen(alarmId)
 
         scope.launch {
-            val alarm = alarmRepository.getAlarmById(alarmId)
-            playAlarmSound(alarm?.musicUri)
-            if (!alarm?.ttsMessage.isNullOrBlank()) {
-                ttsPlayer.speak(alarm!!.ttsMessage, Locale.getDefault())
+            val alarm = alarmRepository.getAlarmById(alarmId) ?: run { stopSelf(); return@launch }
+            val maxRings = if (alarm.repeatCount == -1) Int.MAX_VALUE else alarm.repeatCount
+
+            repeat(maxRings) { index ->
+                if (isDismissed.get()) return@launch
+
+                if (alarm.isMusicEnabled) {
+                    playAlarmSound(alarm.musicUri)
+                }
+                if (alarm.isTtsEnabled && alarm.ttsMessage.isNotBlank()) {
+                    ttsPlayer.speak(alarm.ttsMessage, Locale.getDefault())
+                }
+                if (alarm.isVibrationEnabled) {
+                    startVibration()
+                }
+
+                delay(RING_DURATION_MS)
+                stopSoundAndVibration()
+
+                if (!isDismissed.get() && index < maxRings - 1) {
+                    delay(alarm.alarmIntervalMinutes * 60_000L)
+                }
             }
+
+            if (!isDismissed.get()) stopSelf()
         }
 
         return START_NOT_STICKY
@@ -86,6 +115,28 @@ class AlarmService : Service() {
         }
     }
 
+    private fun startVibration() {
+        val pattern = longArrayOf(0, 1000, 500)
+        val v = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        vibrator = v
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createWaveform(pattern, 0))
+        } else {
+            @Suppress("DEPRECATION")
+            v.vibrate(pattern, 0)
+        }
+    }
+
+    private fun stopSoundAndVibration() {
+        player?.stop()
+        vibrator?.cancel()
+    }
+
     private fun launchDismissScreen(alarmId: Long) {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -96,11 +147,14 @@ class AlarmService : Service() {
     }
 
     override fun onDestroy() {
+        isDismissed.set(true)
         ttsPlayer.stop()
         ttsPlayer.release()
         player?.stop()
         player?.release()
         player = null
+        vibrator?.cancel()
+        vibrator = null
         scope.cancel()
         super.onDestroy()
     }
@@ -147,5 +201,6 @@ class AlarmService : Service() {
     companion object {
         const val CHANNEL_ID = "sage_alarm_channel"
         const val NOTIFICATION_ID = 1001
+        private const val RING_DURATION_MS = 60_000L
     }
 }

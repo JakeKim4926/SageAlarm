@@ -23,6 +23,11 @@ data class AlarmEditUiState(
     val repeatDays: Set<Int> = emptySet(),
     val musicUri: String? = null,
     val isPuzzleEnabled: Boolean = false,
+    val alarmIntervalMinutes: Int = 5,
+    val repeatCount: Int = 1,
+    val isVibrationEnabled: Boolean = false,
+    val isTtsEnabled: Boolean = false,
+    val isMusicEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isNavigateBack: Boolean = false,
     val isDuplicateTime: Boolean = false,
@@ -67,6 +72,11 @@ class AlarmEditViewModel @Inject constructor(
                         repeatDays = alarm.repeatDays,
                         musicUri = alarm.musicUri,
                         isPuzzleEnabled = alarm.isPuzzleEnabled,
+                        alarmIntervalMinutes = alarm.alarmIntervalMinutes,
+                        repeatCount = alarm.repeatCount,
+                        isVibrationEnabled = alarm.isVibrationEnabled,
+                        isTtsEnabled = alarm.isTtsEnabled,
+                        isMusicEnabled = alarm.isMusicEnabled,
                         isLoading = false,
                         isDataLoaded = true,
                     )
@@ -103,6 +113,16 @@ class AlarmEditViewModel @Inject constructor(
 
     fun updatePuzzleEnabled(enabled: Boolean) = _uiState.update { it.copy(isPuzzleEnabled = enabled) }
 
+    fun updateAlarmInterval(minutes: Int) = _uiState.update { it.copy(alarmIntervalMinutes = minutes) }
+
+    fun updateRepeatCount(count: Int) = _uiState.update { it.copy(repeatCount = count) }
+
+    fun updateVibrationEnabled(enabled: Boolean) = _uiState.update { it.copy(isVibrationEnabled = enabled) }
+
+    fun updateTtsEnabled(enabled: Boolean) = _uiState.update { it.copy(isTtsEnabled = enabled) }
+
+    fun updateMusicEnabled(enabled: Boolean) = _uiState.update { it.copy(isMusicEnabled = enabled) }
+
     fun clearDuplicateError() = _uiState.update { it.copy(isDuplicateTime = false) }
 
     fun saveAlarm(hour: Int, minute: Int) {
@@ -122,6 +142,11 @@ class AlarmEditViewModel @Inject constructor(
                 repeatDays = state.repeatDays,
                 musicUri = state.musicUri,
                 isPuzzleEnabled = state.isPuzzleEnabled,
+                alarmIntervalMinutes = state.alarmIntervalMinutes,
+                repeatCount = state.repeatCount,
+                isVibrationEnabled = state.isVibrationEnabled,
+                isTtsEnabled = state.isTtsEnabled,
+                isMusicEnabled = state.isMusicEnabled,
                 isEnabled = true,
             )
             saveAlarmUseCase(alarm)
@@ -144,5 +169,7 @@ class AlarmEditViewModel @Inject constructor(
             Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
             Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY,
         )
+        val ALARM_INTERVAL_OPTIONS = listOf(3, 5, 10)
+        val REPEAT_COUNT_OPTIONS = listOf(1, 3, 5, -1)
     }
 }

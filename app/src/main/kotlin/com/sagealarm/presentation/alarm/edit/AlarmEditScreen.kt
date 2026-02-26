@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -33,12 +32,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -55,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,8 +62,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
-import com.sagealarm.presentation.theme.Beige
-import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
@@ -215,25 +213,16 @@ fun AlarmEditScreen(
                 ),
             )
 
-            Column {
-                OutlinedTextField(
-                    value = uiState.label,
-                    onValueChange = viewModel::updateLabel,
-                    label = { Text(stringResource(R.string.label_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    supportingText = { Text("${uiState.label.length}/${AlarmEditViewModel.MAX_LABEL_LENGTH}") },
-                )
-                OutlinedTextField(
-                    value = uiState.ttsMessage,
-                    onValueChange = viewModel::updateTtsMessage,
-                    label = { Text(stringResource(R.string.tts_message_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 3,
-                    supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
-                )
-            }
+            OutlinedTextField(
+                value = uiState.label,
+                onValueChange = viewModel::updateLabel,
+                label = { Text(stringResource(R.string.label_hint)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                supportingText = { Text("${uiState.label.length}/${AlarmEditViewModel.MAX_LABEL_LENGTH}") },
+            )
 
+            // 반복 요일
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -282,17 +271,149 @@ fun AlarmEditScreen(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(
-                onClick = { musicPicker.launch("audio/*") },
+            // 재울림 간격
+            Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    if (uiState.musicUri != null) stringResource(R.string.select_music)
-                    else stringResource(R.string.no_music_selected)
+                    text = "재울림 간격",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AlarmEditViewModel.ALARM_INTERVAL_OPTIONS.forEach { minutes ->
+                        val selected = uiState.alarmIntervalMinutes == minutes
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(if (selected) Taupe else Beige)
+                                .clickable { viewModel.updateAlarmInterval(minutes) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "${minutes}분",
+                                fontSize = 13.sp,
+                                color = if (selected) WarmWhite else WarmBrownMuted,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 반복 횟수
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "반복 횟수",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AlarmEditViewModel.REPEAT_COUNT_OPTIONS.forEach { count ->
+                        val selected = uiState.repeatCount == count
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(if (selected) Taupe else Beige)
+                                .clickable { viewModel.updateRepeatCount(count) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = if (count == -1) "무한" else "${count}회",
+                                fontSize = 13.sp,
+                                color = if (selected) WarmWhite else WarmBrownMuted,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 진동
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "진동",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = uiState.isVibrationEnabled,
+                    onCheckedChange = viewModel::updateVibrationEnabled,
+                    colors = switchColors(),
                 )
             }
 
+            // TTS
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "TTS",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = uiState.isTtsEnabled,
+                    onCheckedChange = viewModel::updateTtsEnabled,
+                    colors = switchColors(),
+                )
+            }
+            if (uiState.isTtsEnabled) {
+                OutlinedTextField(
+                    value = uiState.ttsMessage,
+                    onValueChange = viewModel::updateTtsMessage,
+                    label = { Text(stringResource(R.string.tts_message_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3,
+                    supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
+                )
+            }
+
+            // 음악
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "음악",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = uiState.isMusicEnabled,
+                    onCheckedChange = viewModel::updateMusicEnabled,
+                    colors = switchColors(),
+                )
+            }
+            if (uiState.isMusicEnabled) {
+                OutlinedButton(
+                    onClick = { musicPicker.launch("audio/*") },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        if (uiState.musicUri != null) stringResource(R.string.select_music)
+                        else stringResource(R.string.no_music_selected)
+                    )
+                }
+            }
+
+            // 알람 해제 퍼즐
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -307,14 +428,7 @@ fun AlarmEditScreen(
                 Switch(
                     checked = uiState.isPuzzleEnabled,
                     onCheckedChange = viewModel::updatePuzzleEnabled,
-                    colors = SwitchDefaults.colors(
-                        checkedTrackColor = Taupe,
-                        checkedThumbColor = WarmWhite,
-                        checkedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                        uncheckedTrackColor = Beige,
-                        uncheckedThumbColor = WarmBrownMuted,
-                        uncheckedBorderColor = BeigeMuted,
-                    ),
+                    colors = switchColors(),
                 )
             }
 
@@ -324,10 +438,19 @@ fun AlarmEditScreen(
             ) {
                 Text(stringResource(R.string.save))
             }
-            }
         }
     }
 }
+
+@Composable
+private fun switchColors() = SwitchDefaults.colors(
+    checkedTrackColor = Taupe,
+    checkedThumbColor = WarmWhite,
+    checkedBorderColor = Color.Transparent,
+    uncheckedTrackColor = Beige,
+    uncheckedThumbColor = WarmBrownMuted,
+    uncheckedBorderColor = BeigeMuted,
+)
 
 private enum class DayChip(val label: String, val calendarValue: Int) {
     MON("월", Calendar.MONDAY),

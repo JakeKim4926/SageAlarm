@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.sagealarm.data.local.db.AlarmDao
 import com.sagealarm.data.local.db.AlarmDatabase
 import com.sagealarm.data.local.db.AlarmDatabase.Companion.MIGRATION_1_2
+import com.sagealarm.data.local.db.AlarmDatabase.Companion.MIGRATION_2_3
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +24,7 @@ object DatabaseModule {
             context,
             AlarmDatabase::class.java,
             "sage_alarm.db",
-        ).addMigrations(MIGRATION_1_2).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
 
     @Provides
     @Singleton
