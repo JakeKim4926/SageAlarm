@@ -13,7 +13,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -134,6 +133,85 @@ fun AlarmListScreen(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> showNotifBanner = !granted }
 
+    // ─── 권한 다이얼로그 (우선순위 순, 한 번에 하나만) ──────────────────────────
+    when {
+        showNotifBanner -> AlertDialog(
+            onDismissRequest = { showNotifBanner = false },
+            title = { Text("알림 권한 필요", color = WarmBrown) },
+            text = {
+                Text(
+                    "알림 권한이 없으면 알람 화면이 표시되지 않아요.",
+                    color = WarmBrownMuted,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }) { Text("허용", color = WarmBrown) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNotifBanner = false }) {
+                    Text("나중에", color = WarmBrownMuted)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+        showExactAlarmBanner -> AlertDialog(
+            onDismissRequest = { showExactAlarmBanner = false },
+            title = { Text("정확한 알람 권한 필요", color = WarmBrown) },
+            text = {
+                Text(
+                    "정확한 알람 권한이 없으면 설정한 시간과 다르게 울릴 수 있어요.",
+                    color = WarmBrownMuted,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        context.startActivity(
+                            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            },
+                        )
+                    }
+                }) { Text("설정으로 이동", color = WarmBrown) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExactAlarmBanner = false }) {
+                    Text("나중에", color = WarmBrownMuted)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+        showBatteryBanner -> AlertDialog(
+            onDismissRequest = { showBatteryBanner = false },
+            title = { Text("배터리 최적화 제외 필요", color = WarmBrown) },
+            text = {
+                Text(
+                    "배터리 최적화가 켜져 있으면 알람이 울리지 않을 수 있어요.",
+                    color = WarmBrownMuted,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    context.startActivity(
+                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.parse("package:${context.packageName}")
+                        },
+                    )
+                }) { Text("제외하기", color = WarmBrown) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBatteryBanner = false }) {
+                    Text("나중에", color = WarmBrownMuted)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+        )
+    }
+
     // ─── 삭제 다이얼로그 ───────────────────────────────────────────────────────
     alarmToDelete?.let { alarm ->
         AlertDialog(
@@ -226,47 +304,6 @@ fun AlarmListScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
             ) {
-                // ─── 권한 안내 배너 ──────────────────────────────────────────
-                if (showNotifBanner) {
-                    PermissionBanner(
-                        message = "알림 권한이 없으면 알람 화면이 뜨지 않아요.",
-                        actionLabel = "허용",
-                        onAction = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            }
-                        },
-                    )
-                }
-                if (showExactAlarmBanner) {
-                    PermissionBanner(
-                        message = "정확한 알람 권한이 없으면 시간이 맞지 않을 수 있어요.",
-                        actionLabel = "설정",
-                        onAction = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                context.startActivity(
-                                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                                        data = Uri.parse("package:${context.packageName}")
-                                    },
-                                )
-                            }
-                        },
-                    )
-                }
-                if (showBatteryBanner) {
-                    PermissionBanner(
-                        message = "배터리 최적화로 인해 알람이 울리지 않을 수 있어요.",
-                        actionLabel = "제외",
-                        onAction = {
-                            context.startActivity(
-                                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                    data = Uri.parse("package:${context.packageName}")
-                                },
-                            )
-                        },
-                    )
-                }
-
                 // ─── 알람 목록 ───────────────────────────────────────────────
                 if (alarms.isNotEmpty()) {
                     LazyColumn(
@@ -285,36 +322,6 @@ fun AlarmListScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PermissionBanner(
-    message: String,
-    actionLabel: String,
-    onAction: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BeigeMuted)
-            .padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = message,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodySmall,
-            color = WarmBrown,
-        )
-        TextButton(onClick = onAction) {
-            Text(
-                text = actionLabel,
-                style = MaterialTheme.typography.labelMedium,
-                color = Taupe,
-                fontWeight = FontWeight.SemiBold,
-            )
         }
     }
 }
