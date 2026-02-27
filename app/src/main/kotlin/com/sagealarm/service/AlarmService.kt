@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
@@ -65,7 +66,12 @@ class AlarmService : Service() {
         alarmJob?.cancel()
         isDismissed.set(false)
         ttsPlayer.initialize()
-        startForeground(NOTIFICATION_ID, buildNotification(alarmId))
+        // Android 14(API 34)+: startForeground()에 서비스 타입 명시 필수
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, buildNotification(alarmId), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification(alarmId))
+        }
         launchDismissScreen(alarmId)
 
         alarmJob = scope.launch {
@@ -199,6 +205,7 @@ class AlarmService : Service() {
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
     }
 
@@ -210,6 +217,7 @@ class AlarmService : Service() {
         ).apply {
             description = getString(R.string.alarm_channel_description)
             setBypassDnd(true)
+            lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .build()

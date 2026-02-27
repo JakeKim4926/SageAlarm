@@ -1,7 +1,19 @@
 package com.sagealarm.presentation.alarm.list
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,25 +47,31 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
 import com.sagealarm.domain.model.Alarm
 import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Taupe
+import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
@@ -70,6 +88,53 @@ fun AlarmListScreen(
     val canAddAlarm by viewModel.canAddAlarm.collectAsStateWithLifecycle()
     var alarmToDelete by remember { mutableStateOf<Alarm?>(null) }
 
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // ─── 권한 상태 ────────────────────────────────────────────────────────────
+    var showNotifBanner by remember {
+        mutableStateOf(
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    var showExactAlarmBanner by remember {
+        mutableStateOf(
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                !(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms(),
+        )
+    }
+    var showBatteryBanner by remember {
+        mutableStateOf(
+            !(context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+                .isIgnoringBatteryOptimizations(context.packageName),
+        )
+    }
+
+    // 설정에서 돌아올 때 재확인
+    DisposableEffect(lifecycleOwner.lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                showNotifBanner = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED
+                showExactAlarmBanner = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    !(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+                showBatteryBanner = !(context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+                    .isIgnoringBatteryOptimizations(context.packageName)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    // 알림 권한은 시스템 다이얼로그로 직접 요청
+    val notifLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> showNotifBanner = !granted }
+
+    // ─── 삭제 다이얼로그 ───────────────────────────────────────────────────────
     alarmToDelete?.let { alarm ->
         AlertDialog(
             onDismissRequest = { alarmToDelete = null },
@@ -156,24 +221,100 @@ fun AlarmListScreen(
                 alpha = 0.18f,
                 contentScale = ContentScale.Fit,
             )
-            if (alarms.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(items = alarms, key = { it.id }) { alarm ->
-                        AlarmItem(
-                            alarm = alarm,
-                            onToggle = { isEnabled -> viewModel.toggleAlarm(alarm.id, isEnabled) },
-                            onEdit = { onEditAlarm(alarm.id) },
-                            onDelete = { alarmToDelete = alarm },
-                        )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            ) {
+                // ─── 권한 안내 배너 ──────────────────────────────────────────
+                if (showNotifBanner) {
+                    PermissionBanner(
+                        message = "알림 권한이 없으면 알람 화면이 뜨지 않아요.",
+                        actionLabel = "허용",
+                        onAction = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        },
+                    )
+                }
+                if (showExactAlarmBanner) {
+                    PermissionBanner(
+                        message = "정확한 알람 권한이 없으면 시간이 맞지 않을 수 있어요.",
+                        actionLabel = "설정",
+                        onAction = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    },
+                                )
+                            }
+                        },
+                    )
+                }
+                if (showBatteryBanner) {
+                    PermissionBanner(
+                        message = "배터리 최적화로 인해 알람이 울리지 않을 수 있어요.",
+                        actionLabel = "제외",
+                        onAction = {
+                            context.startActivity(
+                                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                    data = Uri.parse("package:${context.packageName}")
+                                },
+                            )
+                        },
+                    )
+                }
+
+                // ─── 알람 목록 ───────────────────────────────────────────────
+                if (alarms.isNotEmpty()) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(items = alarms, key = { it.id }) { alarm ->
+                            AlarmItem(
+                                alarm = alarm,
+                                onToggle = { isEnabled -> viewModel.toggleAlarm(alarm.id, isEnabled) },
+                                onEdit = { onEditAlarm(alarm.id) },
+                                onDelete = { alarmToDelete = alarm },
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PermissionBanner(
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BeigeMuted)
+            .padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodySmall,
+            color = WarmBrown,
+        )
+        TextButton(onClick = onAction) {
+            Text(
+                text = actionLabel,
+                style = MaterialTheme.typography.labelMedium,
+                color = Taupe,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }
