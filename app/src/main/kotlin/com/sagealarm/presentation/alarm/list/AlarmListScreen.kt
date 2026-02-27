@@ -95,8 +95,8 @@ fun AlarmListScreen(
     var showNotifBanner by remember {
         mutableStateOf(
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED,
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED,
         )
     }
     var showExactAlarmBanner by remember {
@@ -117,8 +117,8 @@ fun AlarmListScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                 showNotifBanner = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                        != PackageManager.PERMISSION_GRANTED
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                        PackageManager.PERMISSION_GRANTED
                 showExactAlarmBanner = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                     !(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
                 showBatteryBanner = !(context.getSystemService(Context.POWER_SERVICE) as PowerManager)
