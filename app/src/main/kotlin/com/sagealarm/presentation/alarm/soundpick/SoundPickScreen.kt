@@ -31,17 +31,12 @@ import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 
 const val RESULT_MUSIC_URI = "sound_pick_music_uri"
-const val RESULT_TTS_TEXT = "sound_pick_tts_text"
-
-// 빈 문자열 = 시스템 기본 알람음 (musicUri = null 과 동일)
-const val SYSTEM_DEFAULT_SOUND = ""
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SoundPickScreen(
     onBack: () -> Unit,
     onMusicSelected: (uri: String?) -> Unit,
-    onTtsSelected: (text: String) -> Unit,
 ) {
     val packageName = LocalContext.current.packageName
     val devicePicker = rememberLauncherForActivityResult(
@@ -89,9 +84,20 @@ fun SoundPickScreen(
             }
 
             item { SectionHeader(title = "TTS 멘트") }
-            items(DefaultSoundCatalog.ttsPresets) { preset ->
-                SoundRow(name = preset.name) {
-                    preset.ttsText?.let { onTtsSelected(it) }
+            if (DefaultSoundCatalog.ttsPresets.isEmpty()) {
+                item {
+                    Text(
+                        text = "준비 중이에요",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = WarmBrownMuted,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
+                }
+            } else {
+                items(DefaultSoundCatalog.ttsPresets) { preset ->
+                    SoundRow(name = preset.name) {
+                        onMusicSelected(buildRawUri(packageName, preset))
+                    }
                 }
             }
 

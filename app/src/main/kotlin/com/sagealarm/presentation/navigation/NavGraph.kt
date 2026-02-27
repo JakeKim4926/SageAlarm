@@ -13,7 +13,6 @@ import com.sagealarm.presentation.alarm.edit.AlarmEditScreen
 import com.sagealarm.presentation.alarm.edit.AlarmEditViewModel
 import com.sagealarm.presentation.alarm.list.AlarmListScreen
 import com.sagealarm.presentation.alarm.soundpick.RESULT_MUSIC_URI
-import com.sagealarm.presentation.alarm.soundpick.RESULT_TTS_TEXT
 import com.sagealarm.presentation.alarm.soundpick.SoundPickScreen
 import com.sagealarm.presentation.dismiss.DismissScreen
 import com.sagealarm.presentation.settings.SettingsScreen
@@ -53,17 +52,6 @@ fun NavGraph(
                         backStackEntry.savedStateHandle.remove<String>(RESULT_MUSIC_URI)
                     }
             }
-            LaunchedEffect(Unit) {
-                backStackEntry.savedStateHandle
-                    .getStateFlow<String?>(RESULT_TTS_TEXT, null)
-                    .collect { text ->
-                        text ?: return@collect
-                        viewModel.updateTtsMessage(text)
-                        viewModel.updateTtsEnabled(true)
-                        backStackEntry.savedStateHandle.remove<String>(RESULT_TTS_TEXT)
-                    }
-            }
-
             AlarmEditScreen(
                 alarmId = alarmId,
                 onBack = { navController.popBackStack() },
@@ -78,11 +66,6 @@ fun NavGraph(
                 onMusicSelected = { uri ->
                     navController.previousBackStackEntry?.savedStateHandle
                         ?.set(RESULT_MUSIC_URI, uri ?: "")
-                    navController.popBackStack()
-                },
-                onTtsSelected = { text ->
-                    navController.previousBackStackEntry?.savedStateHandle
-                        ?.set(RESULT_TTS_TEXT, text)
                     navController.popBackStack()
                 },
             )
