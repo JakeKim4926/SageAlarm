@@ -1,8 +1,5 @@
 package com.sagealarm.presentation.alarm.edit
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,6 +72,7 @@ import java.util.Calendar
 fun AlarmEditScreen(
     alarmId: Long,
     onBack: () -> Unit,
+    onSoundPick: () -> Unit = {},
     viewModel: AlarmEditViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -88,10 +86,6 @@ fun AlarmEditScreen(
             is24Hour = android.text.format.DateFormat.is24HourFormat(context),
         )
     }
-    val musicPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? -> viewModel.updateMusicUri(uri?.toString()) }
-
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
@@ -403,13 +397,10 @@ fun AlarmEditScreen(
             }
             if (uiState.isMusicEnabled) {
                 OutlinedButton(
-                    onClick = { musicPicker.launch("audio/*") },
+                    onClick = onSoundPick,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(
-                        if (uiState.musicUri != null) stringResource(R.string.select_music)
-                        else stringResource(R.string.no_music_selected)
-                    )
+                    Text(musicDisplayName(uiState.musicUri))
                 }
             }
 
@@ -451,6 +442,13 @@ private fun switchColors() = SwitchDefaults.colors(
     uncheckedThumbColor = WarmBrownMuted,
     uncheckedBorderColor = BeigeMuted,
 )
+
+private fun musicDisplayName(uri: String?): String = when {
+    uri == null -> "기본 알람음"
+    "/raw/" in uri -> uri.substringAfterLast("/").replace("_", " ")
+    uri.startsWith("content://") -> "기기 음악"
+    else -> "기본 알람음"
+}
 
 private enum class DayChip(val label: String, val calendarValue: Int) {
     MON("월", Calendar.MONDAY),

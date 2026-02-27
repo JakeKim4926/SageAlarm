@@ -9,4 +9,5 @@ sealed class Screen(val route: String) {
         fun createRoute(alarmId: Long) = "dismiss/$alarmId"
     }
     data object Settings : Screen("settings")
+    data object SoundPick : Screen("sound_pick")
 }
