@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.sagealarm.data.catalog.DefaultSoundCatalog
 import com.sagealarm.domain.model.PresetSound
-import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 
@@ -73,8 +70,7 @@ fun SoundPickScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            // 고정 옵션: 기기 음악 + 기본 알람음
-            // Android 기본 링톤 선택 UI와 동일한 패턴 — Card로 묶어 프리셋 섹션과 명확히 구분
+            // 기기에서 선택: 외부 파일 피커를 여는 액션 → Card + 화살표로 "액션" 성격 표시
             item {
                 Card(
                     modifier = Modifier
@@ -84,44 +80,31 @@ fun SoundPickScreen(
                         containerColor = MaterialTheme.colorScheme.surface,
                     ),
                 ) {
-                    Column {
-                        // 기기에서 선택: 외부 파일 피커를 여는 액션 → 화살표 아이콘으로 표시
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { devicePicker.launch("audio/*") }
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "기기에서 선택",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = WarmBrown,
-                            )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                tint = WarmBrownMuted,
-                            )
-                        }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = BeigeMuted,
-                        )
-                        // 기본 알람음: 선택 시 null 반환 → AlarmEditScreen에서 기본값으로 복원
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { devicePicker.launch("audio/*") }
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(
-                            text = "기본 알람음",
+                            text = "기기에서 선택",
                             style = MaterialTheme.typography.bodyLarge,
                             color = WarmBrown,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onMusicSelected(null) }
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
+                        )
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = WarmBrownMuted,
                         )
                     }
                 }
             }
+
+            // 기본 알람음: 다른 프리셋과 동일한 선택 항목 — 선택 시 null 반환 → AlarmEditScreen에서 기본값으로 복원
+            item { SectionHeader("기본") }
+            item { SoundRow("기본 알람음") { onMusicSelected(null) } }
 
             // 동물 소리
             item { SectionHeader("동물 소리") }
