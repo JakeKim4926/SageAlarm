@@ -33,3 +33,6 @@ signing.properties
 
 # Claude Code
 .claude/
+
+# Etc.
+*.mp3

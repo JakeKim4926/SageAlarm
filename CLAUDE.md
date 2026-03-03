@@ -137,3 +137,10 @@ class AndroidTtsPlayer(...) : TtsPlayer
 - 텍스트 색상은 배경과 조화를 위해 기본 텍스트 `WarmBrown`, 보조/UI 텍스트 `WarmBrownMuted` 사용
 — Compose 컴포넌트 색상은 반드시 명시적으로 지정할 것 (Material3 기본값 의존 금지)
 - 컴포넌트 크기는 고정 dp 대신 `weight`, `fillMaxWidth`, `aspectRatio` 등 상대적 단위를 사용한다
+
+# Workflow Rule — Fix Log
+
+- 버그/이슈를 재현해서 수정하는 변경이 발생하면,
+  반드시 .claude/bugsNote.md의 Template을 참고하여 해당 파일에 1개 항목을 추가한다.
+- 항목에는: 증상/재현/원인/해결/예방/관련 커밋 정보를 포함한다.
+- “예방”에는 최소 1개를 추가한다: 테스트 추가, assert/guard, lint rule, 문서화, 리팩토링.
