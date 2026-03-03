@@ -2,7 +2,9 @@ package com.sagealarm.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -42,15 +44,14 @@ fun NavGraph(
             val viewModel: AlarmEditViewModel = hiltViewModel(backStackEntry)
 
             // SoundPickScreen에서 돌아올 때 결과 처리
-            LaunchedEffect(Unit) {
-                backStackEntry.savedStateHandle
-                    .getStateFlow<String?>(RESULT_MUSIC_URI, null)
-                    .collect { uriValue ->
-                        uriValue ?: return@collect
-                        viewModel.updateMusicUri(uriValue.ifEmpty { null })
-                        viewModel.updateMusicEnabled(true)
-                        backStackEntry.savedStateHandle.remove<String>(RESULT_MUSIC_URI)
-                    }
+            val soundPickResult by backStackEntry.savedStateHandle
+                .getStateFlow<String?>(RESULT_MUSIC_URI, null)
+                .collectAsStateWithLifecycle()
+            LaunchedEffect(soundPickResult) {
+                val uri = soundPickResult ?: return@LaunchedEffect
+                viewModel.updateMusicUri(uri.ifEmpty { null })
+                viewModel.updateMusicEnabled(true)
+                backStackEntry.savedStateHandle.remove<String>(RESULT_MUSIC_URI)
             }
             AlarmEditScreen(
                 alarmId = alarmId,

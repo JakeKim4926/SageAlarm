@@ -47,6 +47,7 @@ class AlarmEditViewModel @Inject constructor(
     private var editingAlarm: Alarm? = null
 
     fun loadAlarm(alarmId: Long) {
+        if (_uiState.value.isDataLoaded) return
         if (alarmId == -1L) {
             val now = Calendar.getInstance()
             _uiState.update {
