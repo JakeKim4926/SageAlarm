@@ -1,5 +1,6 @@
 package com.sagealarm.presentation.alarm.soundpick
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -143,6 +144,7 @@ fun SoundPickScreen(
                 val uri = buildRawUri(packageName, preset)
                 PreviewableSoundRow(
                     name = preset.name,
+                    isAvailable = isRawResAvailable(context, packageName, preset.rawResName),
                     isPreviewActive = previewUri == uri,
                     isPlaying = isPlaying && previewUri == uri,
                     progress = if (previewUri == uri) progress else 0f,
@@ -161,6 +163,7 @@ fun SoundPickScreen(
                     val uri = buildRawUri(packageName, preset)
                     PreviewableSoundRow(
                         name = preset.name,
+                        isAvailable = isRawResAvailable(context, packageName, preset.rawResName),
                         isPreviewActive = previewUri == uri,
                         isPlaying = isPlaying && previewUri == uri,
                         progress = if (previewUri == uri) progress else 0f,
@@ -180,6 +183,7 @@ fun SoundPickScreen(
                     val uri = buildRawUri(packageName, preset)
                     PreviewableSoundRow(
                         name = preset.name,
+                        isAvailable = isRawResAvailable(context, packageName, preset.rawResName),
                         isPreviewActive = previewUri == uri,
                         isPlaying = isPlaying && previewUri == uri,
                         progress = if (previewUri == uri) progress else 0f,
@@ -195,6 +199,9 @@ fun SoundPickScreen(
 
 private fun buildRawUri(packageName: String, preset: PresetSound): String =
     "android.resource://$packageName/raw/${preset.rawResName}"
+
+private fun isRawResAvailable(context: Context, packageName: String, rawResName: String): Boolean =
+    context.resources.getIdentifier(rawResName, "raw", packageName) != 0
 
 @Composable
 private fun SectionHeader(title: String) {
@@ -227,6 +234,7 @@ private fun SoundRow(
 @Composable
 private fun PreviewableSoundRow(
     name: String,
+    isAvailable: Boolean,
     isPreviewActive: Boolean,
     isPlaying: Boolean,
     progress: Float,
@@ -250,12 +258,17 @@ private fun PreviewableSoundRow(
             )
             IconButton(
                 onClick = onTogglePreview,
+                enabled = isAvailable,
                 modifier = Modifier.size(36.dp),
             ) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = if (isPlaying) "일시정지" else "미리 듣기",
-                    tint = if (isPreviewActive) Taupe else WarmBrownMuted,
+                    tint = when {
+                        !isAvailable -> BeigeMuted
+                        isPreviewActive -> Taupe
+                        else -> WarmBrownMuted
+                    },
                     modifier = Modifier.size(20.dp),
                 )
             }
