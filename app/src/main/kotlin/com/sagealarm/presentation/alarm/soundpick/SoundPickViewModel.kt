@@ -88,16 +88,23 @@ class SoundPickViewModel @Inject constructor() : ViewModel() {
             while (true) {
                 delay(POSITION_UPDATE_INTERVAL_MS)
                 val p = player ?: break
-                val duration = p.duration
-                if (duration > 0L) {
-                    _progress.value = p.currentPosition.toFloat() / duration
-                }
-                if (!p.isPlaying) {
-                    _isPlaying.value = false
-                    if (p.playbackState == Player.STATE_ENDED) {
-                        _progress.value = 0f
+                when {
+                    p.isPlaying -> {
+                        val duration = p.duration
+                        if (duration > 0L) {
+                            _progress.value = p.currentPosition.toFloat() / duration
+                        }
                     }
-                    break
+                    p.playWhenReady && p.playbackState == Player.STATE_BUFFERING -> {
+                        // 버퍼링 중: isPlaying은 false지만 곧 재생될 예정이므로 대기
+                    }
+                    else -> {
+                        _isPlaying.value = false
+                        if (p.playbackState == Player.STATE_ENDED) {
+                            _progress.value = 0f
+                        }
+                        break
+                    }
                 }
             }
         }
