@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
+import com.sagealarm.data.catalog.DefaultSoundCatalog
 import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
@@ -445,7 +446,11 @@ private fun switchColors() = SwitchDefaults.colors(
 
 private fun musicDisplayName(uri: String?): String = when {
     uri == null -> "기본 알람음"
-    "/raw/" in uri -> uri.substringAfterLast("/").replace("_", " ")
+    "/raw/" in uri -> {
+        val rawResName = uri.substringAfterLast("/")
+        val allPresets = DefaultSoundCatalog.animals + DefaultSoundCatalog.ttsPresets + DefaultSoundCatalog.music
+        allPresets.firstOrNull { it.rawResName == rawResName }?.name ?: rawResName
+    }
     uri.startsWith("content://") -> "기기 음악"
     else -> "기본 알람음"
 }
