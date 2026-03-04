@@ -134,10 +134,6 @@ fun SoundPickScreen(
                 }
             }
 
-            // 기본 알람음: 선택 시 null 반환 → AlarmEditScreen에서 기본값으로 복원
-            item { SectionHeader("기본") }
-            item { SoundRow("기본 알람음") { selectAndStop(null) } }
-
             // 동물 소리
             item { SectionHeader("동물 소리") }
             items(DefaultSoundCatalog.animals) { preset ->
@@ -212,22 +208,6 @@ private fun SectionHeader(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp),
-    )
-}
-
-@Composable
-private fun SoundRow(
-    name: String,
-    onClick: () -> Unit,
-) {
-    Text(
-        text = name,
-        style = MaterialTheme.typography.bodyLarge,
-        color = WarmBrown,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
     )
 }
 
