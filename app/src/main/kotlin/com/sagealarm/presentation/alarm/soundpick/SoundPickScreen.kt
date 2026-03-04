@@ -3,17 +3,26 @@ package com.sagealarm.presentation.alarm.soundpick
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,12 +34,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sagealarm.data.catalog.DefaultSoundCatalog
 import com.sagealarm.domain.model.PresetSound
+import com.sagealarm.presentation.theme.BeigeMuted
+import com.sagealarm.presentation.theme.Taupe
 import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 
@@ -41,18 +58,32 @@ const val RESULT_MUSIC_URI = "sound_pick_music_uri"
 fun SoundPickScreen(
     onBack: () -> Unit,
     onMusicSelected: (uri: String?) -> Unit,
+    viewModel: SoundPickViewModel = hiltViewModel(),
 ) {
-    val packageName = LocalContext.current.packageName
+    val context = LocalContext.current
+    val packageName = context.packageName
+    val previewUri by viewModel.previewUri.collectAsState()
+    val isPlaying by viewModel.isPlaying.collectAsState()
+    val progress by viewModel.progress.collectAsState()
+
+    val selectAndStop: (String?) -> Unit = { uri ->
+        viewModel.stopPreview()
+        onMusicSelected(uri)
+    }
+
     val devicePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? -> uri?.let { onMusicSelected(it.toString()) } }
+    ) { uri: Uri? -> uri?.let { selectAndStop(it.toString()) } }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("알람음 선택") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        viewModel.stopPreview()
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로")
                     }
                 },
@@ -102,14 +133,23 @@ fun SoundPickScreen(
                 }
             }
 
-            // 기본 알람음: 다른 프리셋과 동일한 선택 항목 — 선택 시 null 반환 → AlarmEditScreen에서 기본값으로 복원
+            // 기본 알람음: 선택 시 null 반환 → AlarmEditScreen에서 기본값으로 복원
             item { SectionHeader("기본") }
-            item { SoundRow("기본 알람음") { onMusicSelected(null) } }
+            item { SoundRow("기본 알람음") { selectAndStop(null) } }
 
             // 동물 소리
             item { SectionHeader("동물 소리") }
             items(DefaultSoundCatalog.animals) { preset ->
-                SoundRow(preset.name) { onMusicSelected(buildRawUri(packageName, preset)) }
+                val uri = buildRawUri(packageName, preset)
+                PreviewableSoundRow(
+                    name = preset.name,
+                    isPreviewActive = previewUri == uri,
+                    isPlaying = isPlaying && previewUri == uri,
+                    progress = if (previewUri == uri) progress else 0f,
+                    onSelect = { selectAndStop(uri) },
+                    onTogglePreview = { viewModel.togglePreview(context, uri) },
+                    onSeek = { viewModel.seekTo(it) },
+                )
             }
 
             // TTS 멘트
@@ -118,7 +158,16 @@ fun SoundPickScreen(
                 item { EmptyLabel() }
             } else {
                 items(DefaultSoundCatalog.ttsPresets) { preset ->
-                    SoundRow(preset.name) { onMusicSelected(buildRawUri(packageName, preset)) }
+                    val uri = buildRawUri(packageName, preset)
+                    PreviewableSoundRow(
+                        name = preset.name,
+                        isPreviewActive = previewUri == uri,
+                        isPlaying = isPlaying && previewUri == uri,
+                        progress = if (previewUri == uri) progress else 0f,
+                        onSelect = { selectAndStop(uri) },
+                        onTogglePreview = { viewModel.togglePreview(context, uri) },
+                        onSeek = { viewModel.seekTo(it) },
+                    )
                 }
             }
 
@@ -128,7 +177,16 @@ fun SoundPickScreen(
                 item { EmptyLabel() }
             } else {
                 items(DefaultSoundCatalog.music) { preset ->
-                    SoundRow(preset.name) { onMusicSelected(buildRawUri(packageName, preset)) }
+                    val uri = buildRawUri(packageName, preset)
+                    PreviewableSoundRow(
+                        name = preset.name,
+                        isPreviewActive = previewUri == uri,
+                        isPlaying = isPlaying && previewUri == uri,
+                        progress = if (previewUri == uri) progress else 0f,
+                        onSelect = { selectAndStop(uri) },
+                        onTogglePreview = { viewModel.togglePreview(context, uri) },
+                        onSeek = { viewModel.seekTo(it) },
+                    )
                 }
             }
         }
@@ -164,6 +222,99 @@ private fun SoundRow(
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
     )
+}
+
+@Composable
+private fun PreviewableSoundRow(
+    name: String,
+    isPreviewActive: Boolean,
+    isPlaying: Boolean,
+    progress: Float,
+    onSelect: () -> Unit,
+    onTogglePreview: () -> Unit,
+    onSeek: (Float) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onSelect)
+                .padding(start = 16.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = WarmBrown,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(
+                onClick = onTogglePreview,
+                modifier = Modifier.size(36.dp),
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "일시정지" else "미리 듣기",
+                    tint = if (isPreviewActive) Taupe else WarmBrownMuted,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+        if (isPreviewActive) {
+            SeekBar(
+                progress = progress,
+                onSeek = onSeek,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+        }
+    }
+}
+
+@Composable
+private fun SeekBar(
+    progress: Float,
+    onSeek: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(16.dp)
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val width = size.width.toFloat()
+                    down.consume()
+                    onSeek((down.position.x / width).coerceIn(0f, 1f))
+                    var pressed = true
+                    while (pressed) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull() ?: break
+                        onSeek((change.position.x / width).coerceIn(0f, 1f))
+                        change.consume()
+                        pressed = event.changes.any { it.pressed }
+                    }
+                }
+            },
+    ) {
+        val lineY = center.y
+        val lineStroke = 3.dp.toPx()
+        drawLine(
+            color = BeigeMuted,
+            start = Offset(0f, lineY),
+            end = Offset(size.width, lineY),
+            strokeWidth = lineStroke,
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = Taupe,
+            start = Offset(0f, lineY),
+            end = Offset(size.width * progress.coerceIn(0f, 1f), lineY),
+            strokeWidth = lineStroke,
+            cap = StrokeCap.Round,
+        )
+    }
 }
 
 @Composable
