@@ -1,10 +1,12 @@
 package com.sagealarm.presentation.alarm.edit
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -23,10 +26,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -54,6 +57,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,6 +69,7 @@ import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
 import com.sagealarm.presentation.theme.Taupe
+import com.sagealarm.presentation.theme.WarmBrown
 import com.sagealarm.presentation.theme.WarmBrownMuted
 import com.sagealarm.presentation.theme.WarmWhite
 import java.util.Calendar
@@ -105,35 +111,19 @@ fun AlarmEditScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    text = "알람 삭제",
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            },
-            text = {
-                Text(
-                    text = "이 알람을 삭제할까요?",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            },
+            title = { Text(text = "알람 삭제", color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text(text = "이 알람을 삭제할까요?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteAlarm()
                     showDeleteDialog = false
                 }) {
-                    Text(
-                        text = "삭제",
-                        color = MaterialTheme.colorScheme.error,
-                    )
+                    Text(text = "삭제", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(
-                        text = "취소",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Text(text = "취소", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -185,7 +175,7 @@ fun AlarmEditScreen(
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             TimePicker(
                 state = timePickerState,
@@ -208,88 +198,68 @@ fun AlarmEditScreen(
                 ),
             )
 
-            OutlinedTextField(
-                value = uiState.label,
-                onValueChange = viewModel::updateLabel,
-                label = { Text(stringResource(R.string.label_hint)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                supportingText = { Text("${uiState.label.length}/${AlarmEditViewModel.MAX_LABEL_LENGTH}") },
-            )
-
-            // 반복 요일
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "반복 요일",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                val allDaysSelected = DayChip.entries.all { it.calendarValue in uiState.repeatDays }
-                Box(
+            // ── 기본 정보 ──
+            SectionCard(title = "기본 정보") {
+                OutlinedTextField(
+                    value = uiState.label,
+                    onValueChange = viewModel::updateLabel,
+                    label = { Text(stringResource(R.string.label_hint)) },
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(if (allDaysSelected) Taupe else Beige)
-                        .clickable { viewModel.toggleAllDays() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center,
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    singleLine = true,
+                    supportingText = { Text("${uiState.label.length}/${AlarmEditViewModel.MAX_LABEL_LENGTH}") },
+                )
+
+                HorizontalDivider(color = BeigeMuted, thickness = 0.5.dp)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "매일",
-                        fontSize = 13.sp,
-                        color = if (allDaysSelected) WarmWhite else WarmBrownMuted,
+                        text = "반복 요일",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = WarmBrownMuted,
                     )
-                }
-            }
-            Row(modifier = Modifier.fillMaxWidth()) {
-                DayChip.entries.forEach { day ->
-                    val selected = day.calendarValue in uiState.repeatDays
+                    val allDaysSelected = DayChip.entries.all { it.calendarValue in uiState.repeatDays }
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(3.dp)
-                            .aspectRatio(1f)
                             .clip(CircleShape)
-                            .background(if (selected) Taupe else Beige)
-                            .clickable { viewModel.toggleRepeatDay(day.calendarValue) },
+                            .background(if (allDaysSelected) Taupe else Beige)
+                            .clickable { viewModel.toggleAllDays() }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = day.label,
+                            text = "매일",
                             fontSize = 13.sp,
-                            color = if (selected) WarmWhite else WarmBrownMuted,
+                            color = if (allDaysSelected) WarmWhite else WarmBrownMuted,
                         )
                     }
                 }
-            }
-
-            // 재울림 간격
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "재울림 간격",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AlarmEditViewModel.ALARM_INTERVAL_OPTIONS.forEach { minutes ->
-                        val selected = uiState.alarmIntervalMinutes == minutes
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    DayChip.entries.forEach { day ->
+                        val selected = day.calendarValue in uiState.repeatDays
                         Box(
                             modifier = Modifier
+                                .weight(1f)
+                                .padding(3.dp)
+                                .aspectRatio(1f)
                                 .clip(CircleShape)
                                 .background(if (selected) Taupe else Beige)
-                                .clickable { viewModel.updateAlarmInterval(minutes) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                .clickable { viewModel.toggleRepeatDay(day.calendarValue) },
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
-                                text = "${minutes}분",
+                                text = day.label,
                                 fontSize = 13.sp,
                                 color = if (selected) WarmWhite else WarmBrownMuted,
                             )
@@ -298,129 +268,141 @@ fun AlarmEditScreen(
                 }
             }
 
-            // 반복 횟수
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "반복 횟수",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AlarmEditViewModel.REPEAT_COUNT_OPTIONS.forEach { count ->
-                        val selected = uiState.repeatCount == count
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(if (selected) Taupe else Beige)
-                                .clickable { viewModel.updateRepeatCount(count) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = if (count == -1) "무한" else "${count}회",
-                                fontSize = 13.sp,
-                                color = if (selected) WarmWhite else WarmBrownMuted,
-                            )
+            // ── 재울림 ──
+            SectionCard(title = "재울림") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "간격",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = WarmBrownMuted,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        AlarmEditViewModel.ALARM_INTERVAL_OPTIONS.forEach { minutes ->
+                            val selected = uiState.alarmIntervalMinutes == minutes
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(if (selected) Taupe else Beige)
+                                    .clickable { viewModel.updateAlarmInterval(minutes) }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "${minutes}분",
+                                    fontSize = 13.sp,
+                                    color = if (selected) WarmWhite else WarmBrownMuted,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = BeigeMuted, thickness = 0.5.dp)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "횟수",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = WarmBrownMuted,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        AlarmEditViewModel.REPEAT_COUNT_OPTIONS.forEach { count ->
+                            val selected = uiState.repeatCount == count
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(if (selected) Taupe else Beige)
+                                    .clickable { viewModel.updateRepeatCount(count) }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = if (count == -1) "무한" else "${count}회",
+                                    fontSize = 13.sp,
+                                    color = if (selected) WarmWhite else WarmBrownMuted,
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // 진동
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "진동",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
+            // ── 기능 ──
+            SectionCard(title = "기능") {
+                SwitchSettingRow(
+                    label = "진동",
                     checked = uiState.isVibrationEnabled,
                     onCheckedChange = viewModel::updateVibrationEnabled,
-                    colors = switchColors(),
                 )
-            }
 
-            // TTS
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "TTS",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
+                HorizontalDivider(color = BeigeMuted, thickness = 0.5.dp)
+
+                SwitchSettingRow(
+                    label = "TTS 멘트",
+                    subtitle = uiState.ttsMessage.takeIf { uiState.isTtsEnabled && it.isNotBlank() },
                     checked = uiState.isTtsEnabled,
                     onCheckedChange = viewModel::updateTtsEnabled,
-                    colors = switchColors(),
                 )
-            }
-            if (uiState.isTtsEnabled) {
-                OutlinedTextField(
-                    value = uiState.ttsMessage,
-                    onValueChange = viewModel::updateTtsMessage,
-                    label = { Text(stringResource(R.string.tts_message_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 3,
-                    supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
-                )
-            }
+                if (uiState.isTtsEnabled) {
+                    OutlinedTextField(
+                        value = uiState.ttsMessage,
+                        onValueChange = viewModel::updateTtsMessage,
+                        label = { Text(stringResource(R.string.tts_message_hint)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                        maxLines = 3,
+                        supportingText = { Text("${uiState.ttsMessage.length}/${AlarmEditViewModel.MAX_TTS_LENGTH}") },
+                    )
+                }
 
-            // 음악
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "음악",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
+                HorizontalDivider(color = BeigeMuted, thickness = 0.5.dp)
+
+                SwitchSettingRow(
+                    label = "알람음",
+                    subtitle = musicDisplayName(uiState.musicUri),
                     checked = uiState.isMusicEnabled,
                     onCheckedChange = viewModel::updateMusicEnabled,
-                    colors = switchColors(),
                 )
-            }
-            if (uiState.isMusicEnabled) {
-                OutlinedButton(
-                    onClick = onSoundPick,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(musicDisplayName(uiState.musicUri))
+                if (uiState.isMusicEnabled) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, BeigeMuted, RoundedCornerShape(10.dp))
+                            .clickable(onClick = onSoundPick)
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "알람음 선택하기",
+                            fontSize = 13.sp,
+                            color = WarmBrownMuted,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(text = "›", fontSize = 18.sp, color = BeigeMuted)
+                    }
                 }
-            }
 
-            // 알람 해제 퍼즐
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "알람 해제 퍼즐",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
+                HorizontalDivider(color = BeigeMuted, thickness = 0.5.dp)
+
+                SwitchSettingRow(
+                    label = "해제 퍼즐",
                     checked = uiState.isPuzzleEnabled,
                     onCheckedChange = viewModel::updatePuzzleEnabled,
-                    colors = switchColors(),
                 )
             }
 
@@ -431,6 +413,69 @@ fun AlarmEditScreen(
                 Text(stringResource(R.string.save))
             }
         }
+    }
+}
+
+@Composable
+private fun SectionCard(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, BeigeMuted, RoundedCornerShape(16.dp))
+            .background(WarmWhite),
+    ) {
+        Text(
+            text = title.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = WarmBrownMuted,
+            letterSpacing = 0.8.sp,
+            modifier = Modifier.padding(start = 16.dp, top = 10.dp, end = 16.dp),
+        )
+        content()
+    }
+}
+
+@Composable
+private fun SwitchSettingRow(
+    label: String,
+    subtitle: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = WarmBrown,
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    fontSize = 11.sp,
+                    color = WarmBrownMuted,
+                    modifier = Modifier.padding(top = 2.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = switchColors(),
+        )
     }
 }
 
