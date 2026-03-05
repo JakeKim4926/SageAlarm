@@ -32,7 +32,6 @@ fun NavGraph(
             AlarmListScreen(
                 onAddAlarm = { navController.navigate(Screen.AlarmEdit.createRoute()) },
                 onEditAlarm = { alarmId -> navController.navigate(Screen.AlarmEdit.createRoute(alarmId)) },
-                onSettings = { navController.navigate(Screen.Settings.route) },
             )
         }
 
