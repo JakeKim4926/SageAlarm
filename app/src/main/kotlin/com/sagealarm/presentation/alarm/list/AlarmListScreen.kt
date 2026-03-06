@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -59,6 +60,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -275,7 +277,7 @@ fun AlarmListScreen(
             }
         },
         bottomBar = {
-            Column {
+            Column(modifier = Modifier.navigationBarsPadding()) {
                 HorizontalDivider(color = Beige, thickness = 1.dp)
                 Row(
                     modifier = Modifier
@@ -316,19 +318,18 @@ fun AlarmListScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            // ─── 배경 워터마크 ────────────────────────────────────────────────
-            Image(
-                painter = painterResource(R.drawable.ic_background),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth(0.825f)
-                    .aspectRatio(1f)
-                    .align(Alignment.Center),
-                alpha = 0.18f,
-                contentScale = ContentScale.Fit,
-            )
-
             if (alarms.isNotEmpty()) {
+                // ─── 배경 워터마크 ────────────────────────────────────────────────
+                Image(
+                    painter = painterResource(R.drawable.ic_background),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth(0.825f)
+                        .aspectRatio(1f)
+                        .align(Alignment.Center),
+                    alpha = 0.18f,
+                    contentScale = ContentScale.Fit,
+                )
                 // ─── 알람 목록 ────────────────────────────────────────────────
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -345,29 +346,28 @@ fun AlarmListScreen(
                     }
                 }
             } else {
-                // ─── 빈 상태 ──────────────────────────────────────────────────
+                // ─── 빈 상태: 로고 + 텍스트를 광학 중심(정중앙보다 20% 위)에 묶어서 배치 ───
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 48.dp),
+                    modifier = Modifier.align(BiasAlignment(0f, -0.2f)),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_background),
                         contentDescription = null,
-                        modifier = Modifier.size(96.dp),
-                        alpha = 0.55f,
+                        modifier = Modifier
+                            .fillMaxWidth(0.72f)
+                            .aspectRatio(1f),
+                        alpha = 0.35f,
                         contentScale = ContentScale.Fit,
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
                         text = "알람이 없어요",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = WarmBrownMuted,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "아래 + 버튼으로 첫 알람을 추가해 보세요",
                         fontSize = 12.sp,
