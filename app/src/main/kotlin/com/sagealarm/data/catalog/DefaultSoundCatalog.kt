@@ -6,9 +6,10 @@ import com.sagealarm.domain.model.SoundCategory
 object DefaultSoundCatalog {
 
     val animals: List<PresetSound> = listOf(
-        PresetSound(id = "animal_dog", name = "강아지", category = SoundCategory.ANIMAL, rawResName = "sound_dog"),
-        PresetSound(id = "animal_horse", name = "말", category = SoundCategory.ANIMAL, rawResName = "sound_horse"),
-        PresetSound(id = "animal_cow", name = "소", category = SoundCategory.ANIMAL, rawResName = "sound_cow"),
+        PresetSound(id = "animal_dog_big", name = "큰 개", category = SoundCategory.ANIMAL, rawResName = "dog_big"),
+        PresetSound(id = "animal_dog_small", name = "작은 개", category = SoundCategory.ANIMAL, rawResName = "dog_small"),
+        PresetSound(id = "animal_horse", name = "말", category = SoundCategory.ANIMAL, rawResName = "horse"),
+        PresetSound(id = "animal_horses", name = "말들의 질주", category = SoundCategory.ANIMAL, rawResName = "horses"),
     )
 
     // 추후 직접 녹음한 음성 파일 추가
