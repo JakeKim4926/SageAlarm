@@ -132,7 +132,13 @@ class AlarmService : Service() {
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         }
 
+        val alarmAudioAttributes = androidx.media3.common.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+
         player = ExoPlayer.Builder(this).build().also { exoPlayer ->
+            exoPlayer.setAudioAttributes(alarmAudioAttributes, /* handleAudioFocus= */ true)
             exoPlayer.setMediaItem(MediaItem.fromUri(uri))
             exoPlayer.repeatMode = ExoPlayer.REPEAT_MODE_ALL
             exoPlayer.prepare()
