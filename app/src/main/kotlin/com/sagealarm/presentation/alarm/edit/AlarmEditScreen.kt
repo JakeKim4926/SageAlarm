@@ -87,7 +87,7 @@ fun AlarmEditScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var isTextInputMode by remember { mutableStateOf(false) }
+    var isTextInputMode by remember { mutableStateOf(true) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val timePickerState = remember(uiState.isDataLoaded) {
