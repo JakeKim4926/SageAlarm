@@ -17,6 +17,8 @@ import com.sagealarm.presentation.alarm.list.AlarmListScreen
 import com.sagealarm.presentation.alarm.soundpick.RESULT_MUSIC_URI
 import com.sagealarm.presentation.alarm.soundpick.SoundPickScreen
 import com.sagealarm.presentation.dismiss.DismissScreen
+import com.sagealarm.presentation.puzzle.PuzzlePreviewScreen
+import com.sagealarm.presentation.puzzle.PuzzleTestScreen
 import com.sagealarm.presentation.settings.SettingsScreen
 
 @Composable
@@ -32,6 +34,7 @@ fun NavGraph(
             AlarmListScreen(
                 onAddAlarm = { navController.navigate(Screen.AlarmEdit.createRoute()) },
                 onEditAlarm = { alarmId -> navController.navigate(Screen.AlarmEdit.createRoute(alarmId)) },
+                onPuzzlePreview = { navController.navigate(Screen.PuzzlePreview.route) },
             )
         }
 
@@ -89,6 +92,24 @@ fun NavGraph(
 
         composable(Screen.Settings.route) {
             SettingsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.PuzzlePreview.route) {
+            PuzzlePreviewScreen(
+                onBack = { navController.popBackStack() },
+                onTestPuzzle = { puzzleType ->
+                    navController.navigate(Screen.PuzzleTest.createRoute(puzzleType.name))
+                },
+            )
+        }
+
+        composable(
+            route = Screen.PuzzleTest.route,
+            arguments = listOf(navArgument("puzzleType") { type = NavType.StringType }),
+        ) {
+            PuzzleTestScreen(
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }

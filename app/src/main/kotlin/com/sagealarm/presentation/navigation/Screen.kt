@@ -10,4 +10,8 @@ sealed class Screen(val route: String) {
     }
     data object Settings : Screen("settings")
     data object SoundPick : Screen("sound_pick")
+    data object PuzzlePreview : Screen("puzzle_preview")
+    data object PuzzleTest : Screen("puzzle_test/{puzzleType}") {
+        fun createRoute(puzzleType: String) = "puzzle_test/$puzzleType"
+    }
 }
