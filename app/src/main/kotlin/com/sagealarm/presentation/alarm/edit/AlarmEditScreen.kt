@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -52,7 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
@@ -99,7 +101,7 @@ fun AlarmEditScreen(
             initialHour = uiState.hour,
             initialMinute = uiState.minute,
             is24Hour = android.text.format.DateFormat.is24HourFormat(context),
-        ).also { it.selection = TimePickerSelectionMode.Minute }
+        )
     }
     var editingField by remember { mutableStateOf<TimePickerSelectionMode?>(null) }
     var textInputValue by remember { mutableStateOf("") }
@@ -108,22 +110,6 @@ fun AlarmEditScreen(
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
         viewModel.clearDuplicateError()
-    }
-    LaunchedEffect(timePickerState) {
-        var isFirstEmit = true
-        snapshotFlow { timePickerState.selection }.collect { selection ->
-            if (isFirstEmit) { isFirstEmit = false; return@collect }
-            textInputValue = when (selection) {
-                TimePickerSelectionMode.Hour -> {
-                    val h = timePickerState.hour
-                    if (timePickerState.is24hour) h.toString()
-                    else (if (h == 0 || h == 12) 12 else h % 12).toString()
-                }
-                TimePickerSelectionMode.Minute -> timePickerState.minute.toString()
-                else -> return@collect
-            }
-            editingField = selection
-        }
     }
     LaunchedEffect(uiState.isDuplicateTime) {
         if (uiState.isDuplicateTime) {
@@ -268,26 +254,64 @@ fun AlarmEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            TimePicker(
-                state = timePickerState,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TimePickerDefaults.colors(
-                    clockDialColor = Beige,
-                    clockDialSelectedContentColor = WarmWhite,
-                    clockDialUnselectedContentColor = WarmBrownMuted,
-                    selectorColor = Taupe,
-                    containerColor = Ivory,
-                    timeSelectorSelectedContainerColor = Taupe,
-                    timeSelectorUnselectedContainerColor = Beige,
-                    timeSelectorSelectedContentColor = WarmWhite,
-                    timeSelectorUnselectedContentColor = WarmBrownMuted,
-                    periodSelectorBorderColor = BeigeMuted,
-                    periodSelectorSelectedContainerColor = Taupe,
-                    periodSelectorUnselectedContainerColor = Beige,
-                    periodSelectorSelectedContentColor = WarmWhite,
-                    periodSelectorUnselectedContentColor = WarmBrownMuted,
-                ),
-            )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                TimePicker(
+                    state = timePickerState,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = Beige,
+                        clockDialSelectedContentColor = WarmWhite,
+                        clockDialUnselectedContentColor = WarmBrownMuted,
+                        selectorColor = Taupe,
+                        containerColor = Ivory,
+                        timeSelectorSelectedContainerColor = Taupe,
+                        timeSelectorUnselectedContainerColor = Beige,
+                        timeSelectorSelectedContentColor = WarmWhite,
+                        timeSelectorUnselectedContentColor = WarmBrownMuted,
+                        periodSelectorBorderColor = BeigeMuted,
+                        periodSelectorSelectedContainerColor = Taupe,
+                        periodSelectorUnselectedContainerColor = Beige,
+                        periodSelectorSelectedContentColor = WarmWhite,
+                        periodSelectorUnselectedContentColor = WarmBrownMuted,
+                    ),
+                )
+                // TimePicker 헤더(시/분 버튼) 영역 위 투명 오버레이.
+                // 선택 상태 변화가 아닌 탭 이벤트를 직접 감지해 항상 다이얼로그를 열기 위함.
+                // 헤더 높이 ≈ 96dp. 12시간제: 시(1/3) | 분(1/3) | AM/PM(1/3, 미차단)
+                Row(modifier = Modifier.fillMaxWidth().height(96.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                            ) {
+                                val h = timePickerState.hour
+                                textInputValue = if (timePickerState.is24hour) h.toString()
+                                    else (if (h == 0 || h == 12) 12 else h % 12).toString()
+                                editingField = TimePickerSelectionMode.Hour
+                                timePickerState.selection = TimePickerSelectionMode.Hour
+                            },
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                            ) {
+                                textInputValue = timePickerState.minute.toString()
+                                editingField = TimePickerSelectionMode.Minute
+                                timePickerState.selection = TimePickerSelectionMode.Minute
+                            },
+                    )
+                    if (!timePickerState.is24hour) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
 
             // ── 기본 정보 ──
             SectionCard(title = "기본 정보") {
