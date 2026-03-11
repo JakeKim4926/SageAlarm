@@ -241,7 +241,7 @@ fun AlarmListScreen(
                             color = WarmBrownMuted,
                         )
                     },
-                    actions = {
+                    navigationIcon = {
                         IconButton(onClick = onPuzzlePreview) {
                             Icon(
                                 imageVector = Icons.Outlined.Extension,
@@ -249,6 +249,8 @@ fun AlarmListScreen(
                                 tint = WarmBrownMuted,
                             )
                         }
+                    },
+                    actions = {
                         if (alarms.isNotEmpty()) {
                             Box(
                                 modifier = Modifier
