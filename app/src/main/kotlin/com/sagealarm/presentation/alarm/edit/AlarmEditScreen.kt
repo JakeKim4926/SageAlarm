@@ -66,7 +66,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -178,6 +180,7 @@ fun AlarmEditScreen(
                         ),
                         keyboardActions = KeyboardActions(onDone = { applyInput() }),
                         singleLine = true,
+                        textStyle = TextStyle(textAlign = TextAlign.Center),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = WarmBrown,
                             unfocusedTextColor = WarmBrown,
