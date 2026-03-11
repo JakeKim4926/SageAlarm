@@ -99,7 +99,7 @@ fun AlarmEditScreen(
             initialHour = uiState.hour,
             initialMinute = uiState.minute,
             is24Hour = android.text.format.DateFormat.is24HourFormat(context),
-        )
+        ).also { it.selection = TimePickerSelectionMode.Minute }
     }
     var editingField by remember { mutableStateOf<TimePickerSelectionMode?>(null) }
     var textInputValue by remember { mutableStateOf("") }
