@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -73,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.widget.Toast
 import com.sagealarm.R
 import com.sagealarm.data.catalog.DefaultSoundCatalog
 import com.sagealarm.presentation.theme.Beige
@@ -125,12 +127,19 @@ fun AlarmEditScreen(
         val isHour = editingField == TimePickerSelectionMode.Hour
         val focusRequester = remember { FocusRequester() }
 
+        val hintRange = if (isHour) {
+            if (timePickerState.is24hour) "0 – 23" else "1 – 12"
+        } else "0 – 59"
+
         fun applyInput() {
             val value = textInputValue.toIntOrNull() ?: return
             if (isHour) {
                 val is24h = timePickerState.is24hour
                 val validRange = if (is24h) 0..23 else 1..12
-                if (value !in validRange) return
+                if (value !in validRange) {
+                    Toast.makeText(context, "유효 범위: $hintRange", Toast.LENGTH_SHORT).show()
+                    return
+                }
                 val newHour = if (is24h) value else {
                     val currentIsPm = timePickerState.hour >= 12
                     when {
@@ -142,7 +151,10 @@ fun AlarmEditScreen(
                 }
                 timePickerState.hour = newHour
             } else {
-                if (value !in 0..59) return
+                if (value !in 0..59) {
+                    Toast.makeText(context, "유효 범위: $hintRange", Toast.LENGTH_SHORT).show()
+                    return
+                }
                 timePickerState.minute = value
             }
             editingField = null
@@ -152,23 +164,32 @@ fun AlarmEditScreen(
             onDismissRequest = { editingField = null },
             title = { Text(text = if (isHour) "시간 입력" else "분 입력", color = WarmBrown) },
             text = {
-                val hintRange = if (isHour) {
-                    if (timePickerState.is24hour) "0 – 23" else "1 – 12"
-                } else "0 – 59"
-                OutlinedTextField(
-                    value = textInputValue,
-                    onValueChange = { textInputValue = it.filter { c -> c.isDigit() }.take(2) },
-                    placeholder = { Text(hintRange, color = WarmBrownMuted) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { applyInput() }),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    OutlinedTextField(
+                        value = textInputValue,
+                        onValueChange = { textInputValue = it.filter { c -> c.isDigit() }.take(2) },
+                        placeholder = { Text(hintRange, color = WarmBrownMuted) },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(onDone = { applyInput() }),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = WarmBrown,
+                            unfocusedTextColor = WarmBrown,
+                            focusedBorderColor = Taupe,
+                            unfocusedBorderColor = BeigeMuted,
+                            cursorColor = Taupe,
+                        ),
+                        modifier = Modifier
+                            .width(100.dp)
+                            .focusRequester(focusRequester),
+                    )
+                }
                 LaunchedEffect(Unit) { focusRequester.requestFocus() }
             },
             confirmButton = {
