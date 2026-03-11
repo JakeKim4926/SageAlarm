@@ -23,8 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +40,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TimePickerState
@@ -87,7 +84,6 @@ fun AlarmEditScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var isTextInputMode by remember { mutableStateOf(true) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val timePickerState = remember(uiState.isDataLoaded) {
@@ -181,47 +177,26 @@ fun AlarmEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            val timePickerColors = TimePickerDefaults.colors(
-                clockDialColor = Beige,
-                clockDialSelectedContentColor = WarmWhite,
-                clockDialUnselectedContentColor = WarmBrownMuted,
-                selectorColor = Taupe,
-                containerColor = Ivory,
-                timeSelectorSelectedContainerColor = Taupe,
-                timeSelectorUnselectedContainerColor = Beige,
-                timeSelectorSelectedContentColor = WarmWhite,
-                timeSelectorUnselectedContentColor = WarmBrownMuted,
-                periodSelectorBorderColor = BeigeMuted,
-                periodSelectorSelectedContainerColor = Taupe,
-                periodSelectorUnselectedContainerColor = Beige,
-                periodSelectorSelectedContentColor = WarmWhite,
-                periodSelectorUnselectedContentColor = WarmBrownMuted,
-            )
-            if (isTextInputMode) {
-                TimeInput(
-                    state = timePickerState,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = timePickerColors,
-                )
-            } else {
-                TimePicker(
-                    state = timePickerState,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = timePickerColors,
-                )
-            }
-            Row(
+            TimePicker(
+                state = timePickerState,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                IconButton(onClick = { isTextInputMode = !isTextInputMode }) {
-                    Icon(
-                        imageVector = if (isTextInputMode) Icons.Outlined.AccessTime else Icons.Outlined.Keyboard,
-                        contentDescription = if (isTextInputMode) "시계로 입력" else "직접 입력",
-                        tint = WarmBrownMuted,
-                    )
-                }
-            }
+                colors = TimePickerDefaults.colors(
+                    clockDialColor = Beige,
+                    clockDialSelectedContentColor = WarmWhite,
+                    clockDialUnselectedContentColor = WarmBrownMuted,
+                    selectorColor = Taupe,
+                    containerColor = Ivory,
+                    timeSelectorSelectedContainerColor = Taupe,
+                    timeSelectorUnselectedContainerColor = Beige,
+                    timeSelectorSelectedContentColor = WarmWhite,
+                    timeSelectorUnselectedContentColor = WarmBrownMuted,
+                    periodSelectorBorderColor = BeigeMuted,
+                    periodSelectorSelectedContainerColor = Taupe,
+                    periodSelectorUnselectedContainerColor = Beige,
+                    periodSelectorSelectedContentColor = WarmWhite,
+                    periodSelectorUnselectedContentColor = WarmBrownMuted,
+                ),
+            )
 
             // ── 기본 정보 ──
             SectionCard(title = "기본 정보") {
