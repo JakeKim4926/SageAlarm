@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TimePickerSelectionMode
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,13 +52,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,10 +101,29 @@ fun AlarmEditScreen(
             is24Hour = android.text.format.DateFormat.is24HourFormat(context),
         )
     }
+    var editingField by remember { mutableStateOf<TimePickerSelectionMode?>(null) }
+    var textInputValue by remember { mutableStateOf("") }
+
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
     LaunchedEffect(timePickerState.hour, timePickerState.minute) {
         viewModel.clearDuplicateError()
+    }
+    LaunchedEffect(timePickerState) {
+        var isFirstEmit = true
+        snapshotFlow { timePickerState.selection }.collect { selection ->
+            if (isFirstEmit) { isFirstEmit = false; return@collect }
+            textInputValue = when (selection) {
+                TimePickerSelectionMode.Hour -> {
+                    val h = timePickerState.hour
+                    if (timePickerState.is24hour) h.toString()
+                    else (if (h == 0 || h == 12) 12 else h % 12).toString()
+                }
+                TimePickerSelectionMode.Minute -> timePickerState.minute.toString()
+                else -> return@collect
+            }
+            editingField = selection
+        }
     }
     LaunchedEffect(uiState.isDuplicateTime) {
         if (uiState.isDuplicateTime) {
@@ -106,6 +133,70 @@ fun AlarmEditScreen(
             )
             viewModel.clearDuplicateError()
         }
+    }
+
+    if (editingField != null) {
+        val isHour = editingField == TimePickerSelectionMode.Hour
+        val focusRequester = remember { FocusRequester() }
+
+        fun applyInput() {
+            val value = textInputValue.toIntOrNull() ?: return
+            if (isHour) {
+                val is24h = timePickerState.is24hour
+                val validRange = if (is24h) 0..23 else 1..12
+                if (value !in validRange) return
+                val newHour = if (is24h) value else {
+                    val currentIsPm = timePickerState.hour >= 12
+                    when {
+                        value == 12 && !currentIsPm -> 0
+                        value == 12 && currentIsPm -> 12
+                        currentIsPm -> value + 12
+                        else -> value
+                    }
+                }
+                timePickerState.hour = newHour
+            } else {
+                if (value !in 0..59) return
+                timePickerState.minute = value
+            }
+            editingField = null
+        }
+
+        AlertDialog(
+            onDismissRequest = { editingField = null },
+            title = { Text(text = if (isHour) "시간 입력" else "분 입력", color = WarmBrown) },
+            text = {
+                val hintRange = if (isHour) {
+                    if (timePickerState.is24hour) "0 – 23" else "1 – 12"
+                } else "0 – 59"
+                OutlinedTextField(
+                    value = textInputValue,
+                    onValueChange = { textInputValue = it.filter { c -> c.isDigit() }.take(2) },
+                    placeholder = { Text(hintRange, color = WarmBrownMuted) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { applyInput() }),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                )
+                LaunchedEffect(Unit) { focusRequester.requestFocus() }
+            },
+            confirmButton = {
+                TextButton(onClick = { applyInput() }) {
+                    Text("확인", color = Taupe)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingField = null }) {
+                    Text("취소", color = WarmBrownMuted)
+                }
+            },
+            containerColor = Ivory,
+        )
     }
 
     if (showDeleteDialog) {
