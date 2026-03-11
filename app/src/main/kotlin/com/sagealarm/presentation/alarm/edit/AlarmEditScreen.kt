@@ -186,7 +186,7 @@ fun AlarmEditScreen(
                             cursorColor = Taupe,
                         ),
                         modifier = Modifier
-                            .width(100.dp)
+                            .width(72.dp)
                             .focusRequester(focusRequester),
                     )
                 }
