@@ -162,7 +162,7 @@ fun AlarmEditScreen(
 
         AlertDialog(
             onDismissRequest = { editingField = null },
-            title = { Text(text = if (isHour) "시간 입력" else "분 입력", color = WarmBrown) },
+            title = { Text(text = if (isHour) "시 입력" else "분 입력", color = WarmBrown) },
             text = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -203,6 +203,8 @@ fun AlarmEditScreen(
                 }
             },
             containerColor = Ivory,
+            titleContentColor = WarmBrown,
+            textContentColor = WarmBrown,
         )
     }
 
