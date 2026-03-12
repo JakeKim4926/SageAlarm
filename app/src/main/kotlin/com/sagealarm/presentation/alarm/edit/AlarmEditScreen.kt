@@ -100,15 +100,23 @@ fun AlarmEditScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val timePickerState = remember(uiState.isDataLoaded) {
+    var displayHour by remember(uiState.isDataLoaded) { mutableStateOf(uiState.hour) }
+    var displayMinute by remember(uiState.isDataLoaded) { mutableStateOf(uiState.minute) }
+    var lastSelection by remember { mutableStateOf(TimePickerSelectionMode.Hour) }
+    val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+    val timePickerState = remember(displayHour, displayMinute) {
         TimePickerState(
-            initialHour = uiState.hour,
-            initialMinute = uiState.minute,
-            is24Hour = android.text.format.DateFormat.is24HourFormat(context),
+            initialHour = displayHour,
+            initialMinute = displayMinute,
+            is24Hour = is24Hour,
         )
     }
     var editingField by remember { mutableStateOf<TimePickerSelectionMode?>(null) }
     var textInputValue by remember { mutableStateOf("") }
+
+    LaunchedEffect(displayHour, displayMinute) {
+        timePickerState.selection = lastSelection
+    }
 
     LaunchedEffect(alarmId) { viewModel.loadAlarm(alarmId) }
     LaunchedEffect(uiState.isNavigateBack) { if (uiState.isNavigateBack) onBack() }
@@ -151,13 +159,17 @@ fun AlarmEditScreen(
                         else -> value
                     }
                 }
-                timePickerState.hour = newHour
+                displayMinute = timePickerState.minute
+                displayHour = newHour
+                lastSelection = TimePickerSelectionMode.Hour
             } else {
                 if (value !in 0..59) {
                     Toast.makeText(context, "유효 범위: $hintRange", Toast.LENGTH_SHORT).show()
                     return
                 }
-                timePickerState.minute = value
+                displayHour = timePickerState.hour
+                displayMinute = value
+                lastSelection = TimePickerSelectionMode.Minute
             }
             editingField = null
         }
@@ -173,7 +185,6 @@ fun AlarmEditScreen(
                     OutlinedTextField(
                         value = textInputValue,
                         onValueChange = { textInputValue = it.filter { c -> c.isDigit() }.take(2) },
-                        placeholder = { Text(hintRange, color = WarmBrownMuted) },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done,
