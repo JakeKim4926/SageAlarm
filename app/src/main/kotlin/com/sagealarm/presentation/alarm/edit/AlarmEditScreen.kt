@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -256,6 +257,9 @@ fun AlarmEditScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { viewModel.saveAlarm(timePickerState.hour, timePickerState.minute) }) {
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save))
+                    }
                     if (alarmId != -1L) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
@@ -558,12 +562,6 @@ fun AlarmEditScreen(
                 )
             }
 
-            Button(
-                onClick = { viewModel.saveAlarm(timePickerState.hour, timePickerState.minute) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.save))
-            }
         }
     }
 }
