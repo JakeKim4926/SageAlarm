@@ -103,7 +103,7 @@ fun PuzzleTestScreen(
                         contentColor = WarmWhite,
                     ),
                 ) {
-                    Text(text = "다시 테스트")
+                    Text(text = "다시 시작")
                 }
             }
         } else {

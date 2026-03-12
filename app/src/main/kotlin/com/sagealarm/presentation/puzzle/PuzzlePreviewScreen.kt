@@ -113,7 +113,7 @@ private fun PuzzleTypeCard(
                     text = puzzleType.displayName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = WarmBrown,
+                    color = WarmBrownMuted,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -132,7 +132,7 @@ private fun PuzzleTypeCard(
                 ),
             ) {
                 Text(
-                    text = "테스트",
+                    text = "시작",
                     fontSize = 13.sp,
                 )
             }
