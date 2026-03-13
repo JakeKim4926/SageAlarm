@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -158,6 +160,13 @@ fun PuzzleTestScreen(
                         input = uiState.captchaInput,
                         onInputChanged = viewModel::onCaptchaInputChanged,
                     )
+                    PuzzleType.COLOR_WORD -> uiState.colorWordRound?.let { round ->
+                        ColorWordPuzzle(
+                            round = round,
+                            progress = uiState.colorWordProgress,
+                            onOptionSelected = viewModel::onColorWordOptionSelected,
+                        )
+                    }
                 }
             }
         }
@@ -265,6 +274,55 @@ private fun CaptchaPuzzle(
                 .width(240.dp)
                 .focusRequester(focusRequester),
         )
+    }
+}
+
+@Composable
+private fun ColorWordPuzzle(
+    round: ColorWordRound,
+    progress: Int,
+    onOptionSelected: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "$progress / 3",
+            fontSize = 14.sp,
+            color = WarmBrownMuted,
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text(
+            text = round.word,
+            fontSize = 72.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(round.inkColorArgb),
+        )
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            round.options.chunked(2).forEach { rowOptions ->
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    rowOptions.forEach { option ->
+                        Button(
+                            onClick = { onOptionSelected(option.name) },
+                            modifier = Modifier.size(80.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(option.colorArgb),
+                                contentColor = Color(option.colorArgb),
+                            ),
+                        ) {}
+                    }
+                }
+            }
+        }
     }
 }
 

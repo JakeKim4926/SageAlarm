@@ -15,4 +15,9 @@ enum class PuzzleType(
         description = "왜곡된 문자를 보고 대소문자를 구분하여 그대로 입력하세요.",
         instruction = "문자를 정확히 입력하세요 (대소문자 구분)",
     ),
+    COLOR_WORD(
+        displayName = "색상 단어",
+        description = "단어의 뜻이 아닌 글자의 색을 선택하세요. 3번 연속 맞춰야 해제됩니다.",
+        instruction = "글자의 색을 선택하세요",
+    ),
 }

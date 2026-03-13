@@ -20,6 +20,8 @@ private const val MAX_POSITION_ATTEMPTS = 100
 private const val CAPTCHA_LENGTH = 6
 private const val CAPTCHA_NOISE_COUNT = 6
 private const val CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
+private const val COLOR_WORD_ROUNDS = 3
+private const val COLOR_OPTION_COUNT = 4
 
 data class PuzzleNumberItem(
     val value: Int,
@@ -44,6 +46,18 @@ data class CaptchaNoiseItem(
     val colorArgb: Int,
 )
 
+data class ColorWordOption(
+    val name: String,
+    val colorArgb: Long,
+)
+
+data class ColorWordRound(
+    val word: String,
+    val inkColorArgb: Long,
+    val correctName: String,
+    val options: List<ColorWordOption>,
+)
+
 data class PuzzleTestUiState(
     val puzzleType: PuzzleType = PuzzleType.NUMBER_ORDER,
     val numberItems: List<PuzzleNumberItem> = emptyList(),
@@ -51,6 +65,8 @@ data class PuzzleTestUiState(
     val captchaInput: String = "",
     val captchaChars: List<CaptchaCharItem> = emptyList(),
     val captchaNoiseLines: List<CaptchaNoiseItem> = emptyList(),
+    val colorWordRound: ColorWordRound? = null,
+    val colorWordProgress: Int = 0,
     val isComplete: Boolean = false,
 )
 
@@ -93,6 +109,22 @@ class PuzzleTestViewModel @Inject constructor(
         }
     }
 
+    fun onColorWordOptionSelected(name: String) {
+        if (_uiState.value.isComplete) return
+        val round = _uiState.value.colorWordRound ?: return
+        val newProgress = if (name == round.correctName) {
+            _uiState.value.colorWordProgress + 1
+        } else {
+            0
+        }
+        if (newProgress >= COLOR_WORD_ROUNDS) {
+            _uiState.update { it.copy(isComplete = true, colorWordProgress = newProgress) }
+        } else {
+            _uiState.update { it.copy(colorWordProgress = newProgress) }
+            generateColorWord()
+        }
+    }
+
     fun onCaptchaInputChanged(input: String) {
         if (_uiState.value.isComplete) return
         val filtered = input.filter { it.isLetterOrDigit() }.take(CAPTCHA_LENGTH)
@@ -107,10 +139,11 @@ class PuzzleTestViewModel @Inject constructor(
     }
 
     private fun generatePuzzle() {
-        _uiState.update { it.copy(isComplete = false) }
+        _uiState.update { it.copy(isComplete = false, colorWordProgress = 0) }
         when (puzzleType) {
             PuzzleType.NUMBER_ORDER -> generateNumberOrder()
             PuzzleType.CAPTCHA -> generateCaptcha()
+            PuzzleType.COLOR_WORD -> generateColorWord()
         }
     }
 
@@ -127,6 +160,27 @@ class PuzzleTestViewModel @Inject constructor(
             )
         }
         _uiState.update { it.copy(numberItems = items, isComplete = false) }
+    }
+
+    private fun generateColorWord() {
+        val inkColor = COLOR_PALETTE.random()
+        val wordColor = COLOR_PALETTE.filter { it.first != inkColor.first }.random()
+        val distractors = COLOR_PALETTE
+            .filter { it.first != inkColor.first }
+            .shuffled()
+            .take(COLOR_OPTION_COUNT - 1)
+        val options = (listOf(ColorWordOption(inkColor.first, inkColor.second)) +
+            distractors.map { ColorWordOption(it.first, it.second) }).shuffled()
+        _uiState.update {
+            it.copy(
+                colorWordRound = ColorWordRound(
+                    word = wordColor.first,
+                    inkColorArgb = inkColor.second,
+                    correctName = inkColor.first,
+                    options = options,
+                ),
+            )
+        }
     }
 
     private fun generateCaptcha() {
@@ -190,6 +244,14 @@ class PuzzleTestViewModel @Inject constructor(
         start + (endInclusive - start) * Random.nextFloat()
 
     companion object {
+        private val COLOR_PALETTE = listOf<Pair<String, Long>>(
+            Pair("빨강", 0xFFD32F2FL),
+            Pair("파랑", 0xFF1565C0L),
+            Pair("초록", 0xFF2E7D32L),
+            Pair("노랑", 0xFFF9A825L),
+            Pair("보라", 0xFF6A1B9AL),
+            Pair("주황", 0xFFE65100L),
+        )
         private val CHAR_COLORS = listOf(
             AndroidColor.rgb(0x3A, 0x2F, 0x1E),
             AndroidColor.rgb(0x55, 0x44, 0x30),
