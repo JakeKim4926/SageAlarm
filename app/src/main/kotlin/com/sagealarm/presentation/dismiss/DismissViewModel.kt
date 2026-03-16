@@ -3,6 +3,7 @@ package com.sagealarm.presentation.dismiss
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sagealarm.domain.model.PuzzleType
 import com.sagealarm.domain.repository.AlarmRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -28,8 +29,6 @@ internal const val PATTERN_SEQUENCE_LENGTH = 4
 private const val PATTERN_FLASH_DURATION_MS = 600L
 private const val PATTERN_FLASH_GAP_MS = 200L
 private const val PATTERN_INITIAL_DELAY_MS = 800L
-
-enum class PuzzleType { NUMBER_ORDER, PATTERN_FOLLOW }
 
 data class NumberItem(
     val value: Int,
@@ -74,13 +73,17 @@ class DismissViewModel @Inject constructor(
         val alarmId = savedStateHandle.get<Long>("alarmId") ?: -1L
         viewModelScope.launch {
             val alarm = alarmRepository.getAlarmById(alarmId)
-            _uiState.update { it.copy(isPuzzleEnabled = alarm?.isPuzzleEnabled ?: false) }
-        }
-        val selectedType = if (Random.nextBoolean()) PuzzleType.NUMBER_ORDER else PuzzleType.PATTERN_FOLLOW
-        _uiState.update { it.copy(puzzleType = selectedType) }
-        when (selectedType) {
-            PuzzleType.NUMBER_ORDER -> generateNumberPuzzle()
-            PuzzleType.PATTERN_FOLLOW -> generatePatternPuzzle()
+            val puzzleType = alarm?.puzzleType ?: PuzzleType.NUMBER_ORDER
+            _uiState.update {
+                it.copy(
+                    isPuzzleEnabled = alarm?.isPuzzleEnabled ?: false,
+                    puzzleType = puzzleType,
+                )
+            }
+            when (puzzleType) {
+                PuzzleType.NUMBER_ORDER -> generateNumberPuzzle()
+                PuzzleType.PATTERN_FOLLOW -> generatePatternPuzzle()
+            }
         }
     }
 

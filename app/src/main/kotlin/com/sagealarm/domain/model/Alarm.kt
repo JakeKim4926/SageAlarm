@@ -10,6 +10,7 @@ data class Alarm(
     val musicUri: String? = null,
     val isEnabled: Boolean = true,
     val isPuzzleEnabled: Boolean = false,
+    val puzzleType: PuzzleType = PuzzleType.NUMBER_ORDER,
     val alarmIntervalMinutes: Int = 5,
     val repeatCount: Int = 1,
     val isVibrationEnabled: Boolean = false,

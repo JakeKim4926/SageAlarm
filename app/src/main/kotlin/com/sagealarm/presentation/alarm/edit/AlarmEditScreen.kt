@@ -80,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.widget.Toast
 import com.sagealarm.R
 import com.sagealarm.data.catalog.DefaultSoundCatalog
+import com.sagealarm.domain.model.PuzzleType
 import com.sagealarm.presentation.theme.Beige
 import com.sagealarm.presentation.theme.BeigeMuted
 import com.sagealarm.presentation.theme.Ivory
@@ -560,6 +561,27 @@ fun AlarmEditScreen(
                     checked = uiState.isPuzzleEnabled,
                     onCheckedChange = viewModel::updatePuzzleEnabled,
                 )
+                if (uiState.isPuzzleEnabled) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        PuzzleTypeOption(
+                            label = "숫자 순서",
+                            description = "높은 숫자부터 차례대로 터치",
+                            selected = uiState.puzzleType == PuzzleType.NUMBER_ORDER,
+                            onClick = { viewModel.updatePuzzleType(PuzzleType.NUMBER_ORDER) },
+                        )
+                        PuzzleTypeOption(
+                            label = "패턴 따라하기",
+                            description = "반짝이는 타일 순서를 기억했다가 터치",
+                            selected = uiState.puzzleType == PuzzleType.PATTERN_FOLLOW,
+                            onClick = { viewModel.updatePuzzleType(PuzzleType.PATTERN_FOLLOW) },
+                        )
+                    }
+                }
             }
 
         }
@@ -626,6 +648,50 @@ private fun SwitchSettingRow(
             onCheckedChange = onCheckedChange,
             colors = switchColors(),
         )
+    }
+}
+
+@Composable
+private fun PuzzleTypeOption(
+    label: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .border(
+                width = if (selected) 1.5.dp else 1.dp,
+                color = if (selected) Taupe else BeigeMuted,
+                shape = RoundedCornerShape(10.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (selected) WarmBrown else WarmBrownMuted,
+            )
+            Text(
+                text = description,
+                fontSize = 11.sp,
+                color = WarmBrownMuted,
+            )
+        }
+        if (selected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = Taupe,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
     }
 }
 

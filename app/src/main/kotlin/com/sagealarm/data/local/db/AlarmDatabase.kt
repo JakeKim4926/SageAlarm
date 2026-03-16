@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [AlarmEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AlarmDatabase : RoomDatabase() {
@@ -29,6 +29,12 @@ abstract class AlarmDatabase : RoomDatabase() {
                 db.execSQL("UPDATE alarms SET isTtsEnabled = 1 WHERE ttsMessage != ''")
                 db.execSQL("ALTER TABLE alarms ADD COLUMN isMusicEnabled INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("UPDATE alarms SET isMusicEnabled = 1 WHERE musicUri IS NOT NULL")
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE alarms ADD COLUMN puzzleType TEXT NOT NULL DEFAULT 'NUMBER_ORDER'")
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.sagealarm.data.local.db
 
 import com.sagealarm.domain.model.Alarm
+import com.sagealarm.domain.model.PuzzleType
 
 fun AlarmEntity.toDomain(): Alarm = Alarm(
     id = id,
@@ -13,6 +14,7 @@ fun AlarmEntity.toDomain(): Alarm = Alarm(
     musicUri = musicUri,
     isEnabled = isEnabled,
     isPuzzleEnabled = isPuzzleEnabled,
+    puzzleType = runCatching { PuzzleType.valueOf(puzzleType) }.getOrDefault(PuzzleType.NUMBER_ORDER),
     alarmIntervalMinutes = alarmIntervalMinutes,
     repeatCount = repeatCount,
     isVibrationEnabled = isVibrationEnabled,
@@ -30,6 +32,7 @@ fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     musicUri = musicUri,
     isEnabled = isEnabled,
     isPuzzleEnabled = isPuzzleEnabled,
+    puzzleType = puzzleType.name,
     alarmIntervalMinutes = alarmIntervalMinutes,
     repeatCount = repeatCount,
     isVibrationEnabled = isVibrationEnabled,

@@ -3,6 +3,7 @@ package com.sagealarm.presentation.alarm.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sagealarm.domain.model.Alarm
+import com.sagealarm.domain.model.PuzzleType
 import com.sagealarm.domain.repository.AlarmRepository
 import com.sagealarm.domain.usecase.DeleteAlarmUseCase
 import com.sagealarm.domain.usecase.SaveAlarmUseCase
@@ -23,6 +24,7 @@ data class AlarmEditUiState(
     val repeatDays: Set<Int> = emptySet(),
     val musicUri: String? = null,
     val isPuzzleEnabled: Boolean = false,
+    val puzzleType: PuzzleType = PuzzleType.NUMBER_ORDER,
     val alarmIntervalMinutes: Int = 5,
     val repeatCount: Int = 1,
     val isVibrationEnabled: Boolean = false,
@@ -73,6 +75,7 @@ class AlarmEditViewModel @Inject constructor(
                         repeatDays = alarm.repeatDays,
                         musicUri = alarm.musicUri,
                         isPuzzleEnabled = alarm.isPuzzleEnabled,
+                        puzzleType = alarm.puzzleType,
                         alarmIntervalMinutes = alarm.alarmIntervalMinutes,
                         repeatCount = alarm.repeatCount,
                         isVibrationEnabled = alarm.isVibrationEnabled,
@@ -114,6 +117,8 @@ class AlarmEditViewModel @Inject constructor(
 
     fun updatePuzzleEnabled(enabled: Boolean) = _uiState.update { it.copy(isPuzzleEnabled = enabled) }
 
+    fun updatePuzzleType(type: PuzzleType) = _uiState.update { it.copy(puzzleType = type) }
+
     fun updateAlarmInterval(minutes: Int) = _uiState.update { it.copy(alarmIntervalMinutes = minutes) }
 
     fun updateRepeatCount(count: Int) = _uiState.update { it.copy(repeatCount = count) }
@@ -143,6 +148,7 @@ class AlarmEditViewModel @Inject constructor(
                 repeatDays = state.repeatDays,
                 musicUri = state.musicUri,
                 isPuzzleEnabled = state.isPuzzleEnabled,
+                puzzleType = state.puzzleType,
                 alarmIntervalMinutes = state.alarmIntervalMinutes,
                 repeatCount = state.repeatCount,
                 isVibrationEnabled = state.isVibrationEnabled,

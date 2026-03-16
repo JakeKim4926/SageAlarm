@@ -15,6 +15,7 @@ data class AlarmEntity(
     val musicUri: String?,
     val isEnabled: Boolean,
     val isPuzzleEnabled: Boolean,
+    val puzzleType: String = "NUMBER_ORDER",
     val alarmIntervalMinutes: Int = 5,
     val repeatCount: Int = 1,
     val isVibrationEnabled: Boolean = false,
