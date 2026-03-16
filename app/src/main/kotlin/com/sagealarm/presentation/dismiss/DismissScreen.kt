@@ -1,6 +1,7 @@
 package com.sagealarm.presentation.dismiss
 
 import android.content.Intent
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -176,7 +177,6 @@ private fun PatternPuzzle(
                         val tile = tiles.getOrNull(tileIndex)
                         PatternTile(
                             isHighlighted = tile?.isHighlighted ?: false,
-                            enabled = !isShowingPattern,
                             onClick = { onTileTapped(tileIndex) },
                             modifier = Modifier
                                 .weight(1f)
@@ -192,14 +192,16 @@ private fun PatternPuzzle(
 @Composable
 private fun PatternTile(
     isHighlighted: Boolean,
-    enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
-        enabled = enabled,
-        modifier = modifier,
+        modifier = modifier.border(
+            width = if (isHighlighted) 2.dp else 1.dp,
+            color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+            shape = RoundedCornerShape(12.dp),
+        ),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isHighlighted) {
@@ -207,7 +209,6 @@ private fun PatternTile(
             } else {
                 MaterialTheme.colorScheme.surface
             },
-            disabledContainerColor = MaterialTheme.colorScheme.surface,
         ),
         contentPadding = PaddingValues(0.dp),
     ) {}

@@ -363,17 +363,21 @@ private fun PatternFollowPuzzle(
                 ) {
                     repeat(gridSize) { col ->
                         val tileIndex = row * gridSize + col
+                        val isHighlighted = highlightedIndex == tileIndex
                         Button(
                             onClick = { onTileTapped(tileIndex) },
-                            enabled = enabled,
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(1f),
+                                .aspectRatio(1f)
+                                .border(
+                                    width = if (isHighlighted) 2.dp else 1.dp,
+                                    color = if (isHighlighted) Taupe else BeigeMuted,
+                                    shape = RoundedCornerShape(12.dp),
+                                ),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (highlightedIndex == tileIndex) Taupe
+                                containerColor = if (isHighlighted) Taupe
                                 else MaterialTheme.colorScheme.surface,
-                                disabledContainerColor = MaterialTheme.colorScheme.surface,
                             ),
                             contentPadding = PaddingValues(0.dp),
                         ) {}
