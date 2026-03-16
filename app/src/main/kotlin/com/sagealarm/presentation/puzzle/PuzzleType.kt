@@ -20,4 +20,9 @@ enum class PuzzleType(
         description = "단어의 뜻이 아닌 글자의 색을 선택하세요. 3번 연속 맞춰야 해제됩니다.",
         instruction = "글자의 색을 선택하세요",
     ),
+    PATTERN_FOLLOW(
+        displayName = "패턴 따라하기",
+        description = "화면에 순서대로 반짝이는 타일을 기억했다가 그대로 터치하세요.",
+        instruction = "순서를 기억하세요",
+    ),
 }

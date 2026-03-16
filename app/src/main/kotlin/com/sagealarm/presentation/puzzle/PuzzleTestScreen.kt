@@ -3,6 +3,7 @@ package com.sagealarm.presentation.puzzle
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -141,7 +142,13 @@ fun PuzzleTestScreen(
                     .padding(16.dp),
             ) {
                 Text(
-                    text = uiState.puzzleType.instruction,
+                    text = when {
+                        uiState.puzzleType == PuzzleType.PATTERN_FOLLOW && uiState.isShowingPattern ->
+                            "순서를 기억하세요"
+                        uiState.puzzleType == PuzzleType.PATTERN_FOLLOW ->
+                            "순서대로 터치하세요 (${uiState.patternInputProgress} / $PATTERN_SEQUENCE_LENGTH)"
+                        else -> uiState.puzzleType.instruction
+                    },
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 16.dp),
@@ -167,6 +174,11 @@ fun PuzzleTestScreen(
                             onOptionSelected = viewModel::onColorWordOptionSelected,
                         )
                     }
+                    PuzzleType.PATTERN_FOLLOW -> PatternFollowPuzzle(
+                        highlightedIndex = uiState.patternHighlightedIndex,
+                        enabled = !uiState.isShowingPattern,
+                        onTileTapped = viewModel::onPatternTileTapped,
+                    )
                 }
             }
         }
@@ -318,6 +330,52 @@ private fun ColorWordPuzzle(
                                 containerColor = Color(option.colorArgb),
                                 contentColor = Color(option.colorArgb),
                             ),
+                        ) {}
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PatternFollowPuzzle(
+    highlightedIndex: Int?,
+    enabled: Boolean,
+    onTileTapped: (Int) -> Unit,
+) {
+    val gridSize = 3
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            repeat(gridSize) { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    repeat(gridSize) { col ->
+                        val tileIndex = row * gridSize + col
+                        Button(
+                            onClick = { onTileTapped(tileIndex) },
+                            enabled = enabled,
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (highlightedIndex == tileIndex) Taupe
+                                else MaterialTheme.colorScheme.surface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            ),
+                            contentPadding = PaddingValues(0.dp),
                         ) {}
                     }
                 }

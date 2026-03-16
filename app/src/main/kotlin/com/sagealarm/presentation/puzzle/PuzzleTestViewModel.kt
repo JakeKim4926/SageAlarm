@@ -3,11 +3,15 @@ package com.sagealarm.presentation.puzzle
 import android.graphics.Color as AndroidColor
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlin.math.pow
 import kotlin.random.Random
 import javax.inject.Inject
@@ -22,6 +26,11 @@ private const val CAPTCHA_NOISE_COUNT = 6
 private const val CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
 private const val COLOR_WORD_ROUNDS = 3
 private const val COLOR_OPTION_COUNT = 4
+private const val PATTERN_TILE_COUNT = 9
+internal const val PATTERN_SEQUENCE_LENGTH = 4
+private const val PATTERN_FLASH_DURATION_MS = 600L
+private const val PATTERN_FLASH_GAP_MS = 200L
+private const val PATTERN_INITIAL_DELAY_MS = 800L
 
 data class PuzzleNumberItem(
     val value: Int,
@@ -67,6 +76,9 @@ data class PuzzleTestUiState(
     val captchaNoiseLines: List<CaptchaNoiseItem> = emptyList(),
     val colorWordRound: ColorWordRound? = null,
     val colorWordProgress: Int = 0,
+    val patternHighlightedIndex: Int? = null,
+    val isShowingPattern: Boolean = false,
+    val patternInputProgress: Int = 0,
     val isComplete: Boolean = false,
 )
 
@@ -84,6 +96,10 @@ class PuzzleTestViewModel @Inject constructor(
 
     private var sortedTarget: List<Int> = emptyList()
     private var nextIndex: Int = 0
+
+    private var patternSequence: List<Int> = emptyList()
+    private var patternInputIndex: Int = 0
+    private var patternPlaybackJob: Job? = null
 
     init {
         generatePuzzle()
@@ -138,12 +154,54 @@ class PuzzleTestViewModel @Inject constructor(
         }
     }
 
+    fun onPatternTileTapped(tileIndex: Int) {
+        if (_uiState.value.isShowingPattern) return
+        if (_uiState.value.isComplete) return
+        val expected = patternSequence.getOrNull(patternInputIndex) ?: return
+        if (tileIndex == expected) {
+            patternInputIndex++
+            if (patternInputIndex >= patternSequence.size) {
+                _uiState.update { it.copy(isComplete = true) }
+            } else {
+                _uiState.update { it.copy(patternInputProgress = patternInputIndex) }
+            }
+        } else {
+            generatePatternFollow()
+        }
+    }
+
     private fun generatePuzzle() {
         _uiState.update { it.copy(isComplete = false, colorWordProgress = 0) }
         when (puzzleType) {
             PuzzleType.NUMBER_ORDER -> generateNumberOrder()
             PuzzleType.CAPTCHA -> generateCaptcha()
             PuzzleType.COLOR_WORD -> generateColorWord()
+            PuzzleType.PATTERN_FOLLOW -> generatePatternFollow()
+        }
+    }
+
+    private fun generatePatternFollow() {
+        val sequence = (0 until PATTERN_TILE_COUNT).toList().shuffled().take(PATTERN_SEQUENCE_LENGTH)
+        patternSequence = sequence
+        patternInputIndex = 0
+        _uiState.update {
+            it.copy(
+                patternHighlightedIndex = null,
+                isShowingPattern = true,
+                patternInputProgress = 0,
+                isComplete = false,
+            )
+        }
+        patternPlaybackJob?.cancel()
+        patternPlaybackJob = viewModelScope.launch {
+            delay(PATTERN_INITIAL_DELAY_MS)
+            patternSequence.forEach { tileIndex ->
+                _uiState.update { it.copy(patternHighlightedIndex = tileIndex) }
+                delay(PATTERN_FLASH_DURATION_MS)
+                _uiState.update { it.copy(patternHighlightedIndex = null) }
+                delay(PATTERN_FLASH_GAP_MS)
+            }
+            _uiState.update { it.copy(isShowingPattern = false) }
         }
     }
 
