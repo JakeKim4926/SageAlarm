@@ -15,5 +15,7 @@
     <string name="delete">삭제</string>
     <string name="settings">설정</string>
     <string name="dismiss_instruction">높은 숫자부터 순서대로 클릭해주세요</string>
+    <string name="dismiss_pattern_watching">순서를 기억하세요</string>
+    <string name="dismiss_pattern_input">순서대로 터치하세요 (%1$d / %2$d)</string>
     <string name="version">버전</string>
 </resources>

@@ -5,10 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -50,23 +54,30 @@ fun DismissScreen(
     }
 
     if (uiState.isPuzzleEnabled) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.dismiss_instruction),
+        when (uiState.puzzleType) {
+            PuzzleType.NUMBER_ORDER -> Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 48.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-            )
-
-            NumberPuzzle(
-                numberItems = uiState.numberItems,
-                onNumberClicked = viewModel::onNumberClicked,
+                    .fillMaxSize()
+                    .padding(16.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.dismiss_instruction),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 48.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                )
+                NumberPuzzle(
+                    numberItems = uiState.numberItems,
+                    onNumberClicked = viewModel::onNumberClicked,
+                )
+            }
+            PuzzleType.PATTERN_FOLLOW -> PatternPuzzle(
+                tiles = uiState.patternTiles,
+                isShowingPattern = uiState.isShowingPattern,
+                inputProgress = uiState.patternInputProgress,
+                onTileTapped = viewModel::onPatternTileTapped,
             )
         }
     } else {
@@ -124,4 +135,79 @@ private fun NumberPuzzle(
             }
         }
     }
+}
+
+@Composable
+private fun PatternPuzzle(
+    tiles: List<TileState>,
+    isShowingPattern: Boolean,
+    inputProgress: Int,
+    onTileTapped: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = if (isShowingPattern) {
+                stringResource(R.string.dismiss_pattern_watching)
+            } else {
+                stringResource(R.string.dismiss_pattern_input, inputProgress, PATTERN_SEQUENCE_LENGTH)
+            },
+            modifier = Modifier.padding(bottom = 40.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+        )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            repeat(PATTERN_GRID_SIZE) { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    repeat(PATTERN_GRID_SIZE) { col ->
+                        val tileIndex = row * PATTERN_GRID_SIZE + col
+                        val tile = tiles.getOrNull(tileIndex)
+                        PatternTile(
+                            isHighlighted = tile?.isHighlighted ?: false,
+                            enabled = !isShowingPattern,
+                            onClick = { onTileTapped(tileIndex) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PatternTile(
+    isHighlighted: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isHighlighted) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+            disabledContainerColor = MaterialTheme.colorScheme.surface,
+        ),
+        contentPadding = PaddingValues(0.dp),
+    ) {}
 }
