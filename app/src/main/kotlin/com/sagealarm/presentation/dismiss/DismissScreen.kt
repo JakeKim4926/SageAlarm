@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sagealarm.R
+import com.sagealarm.domain.model.PuzzleType
 import com.sagealarm.service.AlarmService
 
 private val BUTTON_SIZE = 64.dp
